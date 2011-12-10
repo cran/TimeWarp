@@ -1,3 +1,8 @@
+                CHANGES in TimeWarp version 1.0-2 (2011-12-19)
+CHANGES
+    o   dateFormat() dynamically figures out if the system needs
+    	or can handle date format specs like %02m.
+
                 CHANGES in TimeWarp version 1.0-1 (2011-12-18)
 CHANGES
     o   Removed the default 'bizdays' for argument 'by' in

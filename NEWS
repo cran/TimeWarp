@@ -1,0 +1,8 @@
+                CHANGES in TimeWarp version 1.0-1 (2011-12-18)
+CHANGES
+    o   Removed the default 'bizdays' for argument 'by' in
+        dateWarp() - the argument 'by' must be specified if
+	it is needed.
+    o   All functions that manipulate dates are now generic so
+    	that they return the same class of object as they are
+	given: character, Date, POSIXct, and POSIXlt.

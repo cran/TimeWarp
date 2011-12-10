@@ -1,0 +1,48 @@
+## R code used in verification
+dow <- function(x) if (!is.null(x)) { x <- dateParse(x); paste(format(x, "%Y/%m/%d"), " (", weekdays(x, T), ")", sep = "") } else ""
+
+## S code used in verification
+for (d in 0:15) {date = timeDate("2008/1/1") + d; cat(timeDate.dow(date), "  ", timeDate.dow(dateSeq(date, length.out = 1, by = "weeks", k.by = 1, align.by = T, extend = F, week.align = 3)), "\n") }
+
+dow <- function(x) as.character(timeDate.dow(x))
+
+## S/R code use in verification
+span <- function(x, len) { res <- rep("                ", len); res[1:length(x)] <- x; res}
+pp <- function(x, y = NULL) if (length(x) == length(y)) cat(paste(dow(x), "->", dow(y), "\n"), sep = "") else { len <- max(length(x), length(y)); cat(paste(span(dow(x), len), "  ", span(dow(y), len), "\n"), sep = "") }
+
+## Prity-print time vectors
+pp(x3, warp(x3, shift = 0, by="bizdays", holidays="NYSEC", duplicates.keep = T))
+
+
+##################################################################################
+
+
+## R POSIXlt gotchas!
+
+## Works fine in Date only
+> do.call("c", lapply(0:4, function(i) dateParse("2008/12/25") + i))
+[1] "2008-12-25" "2008-12-26" "2008-12-27" "2008-12-28" "2008-12-29"
+
+## 'as.POSIXlt' goes to UST. 'c' goes to local time zone??????????
+> do.call("c", lapply(0:4, function(i) as.POSIXlt(dateParse("2008/12/25") + i)))
+[1] "2008-12-24 17:00:00 MST" "2008-12-25 17:00:00 MST"
+[3] "2008-12-26 17:00:00 MST" "2008-12-27 17:00:00 MST"
+[5] "2008-12-28 17:00:00 MST"
+
+## Use our 'combine' instead. It preserves the timezone.
+> do.call("combine", lapply(0:4, function(i) as.POSIXlt(dateParse("2008/12/25") + i)))
+[1] "2008-12-25 UTC" "2008-12-26 UTC" "2008-12-27 UTC" "2008-12-28 UTC"
+[5] "2008-12-29 UTC"
+
+
+##################################################################################
+
+
+## Steps for interactive development
+
+## After starting a fresh R session:
+library(versioning); library(holidays); library(RtTests); source.pkg("TimeWarp"); detach(pos=2); source.pkg("TimeWarp"); holidays:::.onLoad(1,1)
+
+## After changing code:
+detach(pos=2); source.pkg("TimeWarp"); holidays:::.onLoad(1,1)
+

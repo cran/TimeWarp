@@ -1,0 +1,17 @@
+- make TimeWarp work with date/times:
+    make the base function for dateAlign/dateShift use POSIXlt (it already does this inside the function, after converting to Date)
+
+- make dateWarp able to take a list of specs and do aligns
+  as well as shifts (get examples/tests from the S-PLUS
+  bmc.misc library files bizdaySeq.html, warp.html. (Lots of
+  these tests should already be in there.)
+
+  When given a list of shifts and aligns, dateWarp should use
+  the function arguments as defaults -- values should not
+  propogate from one shift/align to the next.  E.g., with this
+  spec:
+    timeWarp(x, holidays="NONE",
+             list(shift=list("2 bizdays", holidays="JPNEX"),
+                  shift=list("2 bizdays")))
+  the second shift should use holidays="NONE", not holidays="JPNEX".
+

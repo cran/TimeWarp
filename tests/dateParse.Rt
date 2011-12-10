@@ -1,0 +1,84 @@
+> Sys.setlocale("LC_COLLATE", "C")
+[1] "C"
+> Sys.setlocale("LC_TIME", "C")
+[1] "C"
+> Sys.setenv(TZ='EST') # so that tests that print out time zone work everywhere
+> options(error=function() NULL)
+> dateParse(c("1962/06/20","1962/10/30","NA"))
+[1] "1962-06-20" "1962-10-30" NA          
+> class(dateParse(c("1962/06/20","1962/10/30","NA")))
+[1] "Date"
+> dateParse(c("06/20/1962","1962/10/30","NA"))
+#@ ignore-linebreaks
+Error in dateParse(c("06/20/1962", "1962/10/30", "NA")) : 
+  cannot find consistent format for dates: 1962/10/30, 06/20/1962
+> dateParse(c("06/20/1962","1962/10/30","NA"),stop=F)
+NULL
+> dateParse(c("06/20/1962","10/30/1962","NA"))
+[1] "1962-06-20" "1962-10-30" NA          
+> dateParse(c("19620620","19621030","NA"), ymd8=T)
+[1] "1962-06-20" "1962-10-30" NA          
+> dateParse(c("02/29/1962","10/30/1962","NA"))
+#@ ignore-linebreaks
+Error in dateParse(c("02/29/1962", "10/30/1962", "NA")) : 
+  as.Date returned NA for some strings: 02/29/1962
+> dateParse(c("02/29/1962","10/30/1962","NA"),stop=F)
+NULL
+> dateParse(factor("2001/01/01"))
+[1] "2001-01-01"
+> dateParse(factor(c("2001/01/01","2001/01/03","2001/01/01","2001/01/03")))
+[1] "2001-01-01" "2001-01-03" "2001-01-01" "2001-01-03"
+> dateParse(character(0))
+character(0)
+> dateParse(factor(character(0)))
+character(0)
+> #dateParse(c("06/20/1962","10/30/1962","NA"),zone="MDT",out.format=options("time.format.full24")[[1]])
+> #[1] 1962-06-20 00:00:00 MDT 1962-10-30 00:00:00 MDT NA                     
+> #> dateParse(c("06/20/1962","10/30/1962","NA"),out.format=options("time.format.full24")[[1]])
+> #[1] 1962-06-20 00:00:00 GMT 1962-10-30 00:00:00 GMT NA                    
+> format(dateParse(c("06/20/1962","10/30/1962","NA")), format="%Y-%m-%d %H:%M:%S", usetz=T)
+[1] "1962-06-20 00:00:00 UTC" "1962-10-30 00:00:00 UTC"
+[3] NA                       
+> #> dateParse(dateParse(c("06/20/1962","10/30/1962","NA"),out.format=options("time.format.full24")[[1]]), zone="MDT")
+> #[1] 1962-06-20 00:00:00 MDT 1962-10-30 00:00:00 MDT NA                     
+> #> dateParse(dateParse(c("06/20/1962","10/30/1962","NA"),out.format=options("time.format.full24")[[1]]))
+> #[1] 1962-06-20 00:00:00 GMT 1962-10-30 00:00:00 GMT NA
+> dateParse(c(rep("NA",5), rep("06/20/1962",20)))
+ [1] NA           NA           NA           NA           NA          
+ [6] "1962-06-20" "1962-06-20" "1962-06-20" "1962-06-20" "1962-06-20"
+[11] "1962-06-20" "1962-06-20" "1962-06-20" "1962-06-20" "1962-06-20"
+[16] "1962-06-20" "1962-06-20" "1962-06-20" "1962-06-20" "1962-06-20"
+[21] "1962-06-20" "1962-06-20" "1962-06-20" "1962-06-20" "1962-06-20"
+> dateParse(c(rep("NA",5), rep("06/20/1962",1)))
+[1] NA           NA           NA           NA           NA          
+[6] "1962-06-20"
+> dateParse(c(rep("NA",5), rep("06/20/1962",0)))
+[1] NA NA NA NA NA
+> dateParse(c(19621030,NA,20010228), ymd8=T)
+[1] "1962-10-30" NA           "2001-02-28"
+> dateParse(c(19621030,NA,20010229), ymd8=T)
+#@ ignore-linebreaks
+Error in dateParse(c(19621030, NA, 20010229), ymd8 = T) : 
+  could not parse some dates, e.g.: 20010229
+> dateParse(c(19621030,NA,20010229), stop.on.error=F, ymd8=T)
+NULL
+> dateParse(c("2001/01/01", "", "2001/01/02"))
+[1] "2001-01-01" NA           "2001-01-02"
+> dateParse("1/2/3")
+#@ ignore-linebreaks
+Error in dateParse("1/2/3") : 
+  cannot find consistent format for dates: 1/2/3
+> dateParse("01/02/03")
+#@ ignore-linebreaks
+Error in dateParse("01/02/03") : 
+  cannot find consistent format for dates: 01/02/03
+> dateParse("2001/2/22")
+[1] "2001-02-22"
+> dateParse("2001/22/2")
+#@ ignore-linebreaks
+Error in dateParse("2001/22/2") : 
+  cannot find consistent format for dates: 2001/22/2
+> dateParse("2001-02-14")
+[1] "2001-02-14"
+> dateParse("2-14-2002")
+[1] "2002-02-14"

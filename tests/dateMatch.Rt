@@ -1,0 +1,120 @@
+> dateMatch(dateParse(c("2001/01/10","2001/03/12")), dateSeq(dateParse("2001/01/01"),by="weeks",len=20), how="after")
+[1]  3 11
+> dateMatch(dateParse(c("2001/01/10","2001/03/12")), dateSeq(dateParse("2001/01/01"),by="weeks",len=20), how="before")
+[1]  2 11
+> dateMatch(dateParse(c("2001/01/10","2001/03/12")), dateSeq(dateParse("2001/01/01"),by="weeks",len=20), how="NA")
+[1] NA 11
+> dateMatch(dateParse(c("2001/01/10","2001/03/12")), dateSeq(dateParse("2001/01/01"),by="weeks",len=20), how="NA", nomatch=0)
+[1]  0 11
+> dateMatch(dateParse(c("2001/01/10","2001/03/12")), dateParse(), how="NA")
+[1] NA NA
+> dateMatch(dateParse(), dateSeq(dateParse("2001/01/01"),by="weeks",len=20), how="before")
+numeric(0)
+> dateMatch(dateParse(), dateSeq(dateParse("2001/01/01"),by="weeks",len=20), how="after")
+numeric(0)
+> dateMatch(dateParse(c("2001/01/10","2001/03/12")), dateParse(), how="NA", error.how="drop")
+numeric(0)
+> dateMatch(dateParse(c("2001/01/10","2001/03/12")), dateParse(), how="nearest", error.how="drop")
+numeric(0)
+> dateMatch(dateParse(c("2001/01/10","2001/03/12")), c(dateParse("NA"), dateSeq(dateParse("2001/01/01"),by="weeks",len=20), dateParse("NA")), how="after")
+[1]  4 12
+> # some larger test cases
+> d1 <- dateParse(c('1960/01/10','1960/01/23','1960/01/17','1960/02/03','1960/01/06','1960/01/06','1960/01/12','1960/02/19','1960/01/23','1960/01/15','1960/02/19','1960/02/10','1960/01/03','1960/02/16','1960/02/16','1960/01/29','1960/01/20','1960/02/10','1960/01/21','1960/02/11'))
+> d2 <- dateParse(c('1960/01/12','1960/01/13','1960/01/14','1960/01/15','1960/01/16','1960/01/18','1960/01/20','1960/01/22','1960/01/23','1960/01/24','1960/01/26','1960/01/27','1960/01/28','1960/01/29','1960/01/30','1960/02/04','1960/02/05','1960/02/06','1960/02/08','1960/02/09'))
+> dateMatch(d1, d2)
+ [1] NA  9 NA NA NA NA  1 NA  9  4 NA NA NA NA NA 14  7 NA NA NA
+> dateMatch(sort(d1), d2)
+ [1] NA NA NA NA  1  4 NA  7 NA  9  9 14 NA NA NA NA NA NA NA NA
+> dateMatch(d1, d2, how="before")
+ [1] NA  9  5 15 NA NA  1 20  9  4 20 20 NA 20 20 14  7 20  7 20
+> dateMatch(d1, d2, how="after")
+ [1]  1  9  6 16  1  1  1 NA  9  4 NA NA  1 NA NA 14  7 NA  8 NA
+> dateMatch(d1, d2, how="nearest")
+ [1]  1  9  5 16  1  1  1 20  9  4 20 20  1 20 20 14  7 20  7 20
+> dateMatch(d1, d2, how="interp")
+ [1]   NA  9.0  5.5 15.8   NA   NA  1.0   NA  9.0  4.0   NA   NA   NA   NA   NA
+[16] 14.0  7.0   NA  7.5   NA
+> dateMatch(d1, d2, error.how="drop")
+[1]  9  1  9  4 14  7
+> dateMatch(d1, d2, how="before", error.how="drop")
+ [1]  9  5 15  1 20  9  4 20 20 20 20 14  7 20  7 20
+> dateMatch(d1, d2, how="after", error.how="drop")
+ [1]  1  9  6 16  1  1  1  9  4  1 14  7  8
+> dateMatch(d1, d2, how="nearest", error.how="drop")
+ [1]  1  9  5 16  1  1  1 20  9  4 20 20  1 20 20 14  7 20  7 20
+> dateMatch(d1, d2, how="interp", error.how="drop")
+[1]  9.0  5.5 15.8  1.0  9.0  4.0 14.0  7.0  7.5
+> dateMatch(d1, d2, error.how="nearest")
+ [1] NA  9 NA NA NA NA  1 NA  9  4 NA NA NA NA NA 14  7 NA NA NA
+> dateMatch(d1, d2, how="before", error.how="nearest")
+ [1]  1  9  5 15  1  1  1 20  9  4 20 20  1 20 20 14  7 20  7 20
+> dateMatch(d1, d2, how="after", error.how="nearest")
+ [1]  1  9  6 16  1  1  1 20  9  4 20 20  1 20 20 14  7 20  8 20
+> dateMatch(d1, d2, how="nearest", error.how="nearest")
+ [1]  1  9  5 16  1  1  1 20  9  4 20 20  1 20 20 14  7 20  7 20
+> dateMatch(d1, d2, how="interp", error.how="nearest")
+ [1]  1.0  9.0  5.5 15.8  1.0  1.0  1.0 20.0  9.0  4.0 20.0 20.0  1.0 20.0 20.0
+[16] 14.0  7.0 20.0  7.5 20.0
+> dateMatch(d1, d2, nomatch=0)
+ [1]  0  9  0  0  0  0  1  0  9  4  0  0  0  0  0 14  7  0  0  0
+> dateMatch(d1, d2, how="before", nomatch=0)
+ [1]  0  9  5 15  0  0  1 20  9  4 20 20  0 20 20 14  7 20  7 20
+> dateMatch(d1, d2, how="after", nomatch=0)
+ [1]  1  9  6 16  1  1  1  0  9  4  0  0  1  0  0 14  7  0  8  0
+> dateMatch(d1, d2, how="nearest", nomatch=0)
+ [1]  1  9  5 16  1  1  1 20  9  4 20 20  1 20 20 14  7 20  7 20
+> dateMatch(d1, d2, how="interp", nomatch=0)
+ [1]  0.0  9.0  5.5 15.8  0.0  0.0  1.0  0.0  9.0  4.0  0.0  0.0  0.0  0.0  0.0
+[16] 14.0  7.0  0.0  7.5  0.0
+> dateMatch(d1, d2, error.how="drop", nomatch=0)
+[1]  9  1  9  4 14  7
+> dateMatch(d1, d2, how="before", error.how="drop", nomatch=0)
+ [1]  9  5 15  1 20  9  4 20 20 20 20 14  7 20  7 20
+> dateMatch(d1, d2, how="after", error.how="drop", nomatch=0)
+ [1]  1  9  6 16  1  1  1  9  4  1 14  7  8
+> dateMatch(d1, d2, how="nearest", error.how="drop", nomatch=0)
+ [1]  1  9  5 16  1  1  1 20  9  4 20 20  1 20 20 14  7 20  7 20
+> dateMatch(d1, d2, how="interp", error.how="drop", nomatch=0)
+[1]  9.0  5.5 15.8  1.0  9.0  4.0 14.0  7.0  7.5
+> dateMatch(d1, d2, error.how="nearest", nomatch=0)
+ [1]  0  9  0  0  0  0  1  0  9  4  0  0  0  0  0 14  7  0  0  0
+> dateMatch(d1, d2, how="before", error.how="nearest", nomatch=0)
+ [1]  1  9  5 15  1  1  1 20  9  4 20 20  1 20 20 14  7 20  7 20
+> dateMatch(d1, d2, how="after", error.how="nearest", nomatch=0)
+ [1]  1  9  6 16  1  1  1 20  9  4 20 20  1 20 20 14  7 20  8 20
+> dateMatch(d1, d2, how="nearest", error.how="nearest", nomatch=0)
+ [1]  1  9  5 16  1  1  1 20  9  4 20 20  1 20 20 14  7 20  7 20
+> dateMatch(d1, d2, how="interp", error.how="nearest", nomatch=0)
+ [1]  1.0  9.0  5.5 15.8  1.0  1.0  1.0 20.0  9.0  4.0 20.0 20.0  1.0 20.0 20.0
+[16] 14.0  7.0 20.0  7.5 20.0
+> dateMatch(d1, d2, how="before", error.how="drop") 
+ [1]  9  5 15  1 20  9  4 20 20 20 20 14  7 20  7 20
+> dateMatch(d1, d2, how="before", error.how="NA") 
+ [1] NA  9  5 15 NA NA  1 20  9  4 20 20 NA 20 20 14  7 20  7 20
+> dateMatch(d1, replace(d2, c(3,9,16,17), NA), how="before", error.how="drop") 
+ [1]  8  5 15  1 20  8  4 20 20 20 20 14  7 20  7 20
+> dateMatch(d1, replace(d2, c(3,9,16,17), NA), how="before", error.how="NA") 
+ [1] NA  8  5 15 NA NA  1 20  8  4 20 20 NA 20 20 14  7 20  7 20
+> dateMatch(sort(d1), d2, how="before", error.how="drop") 
+ [1]  1  4  5  7  7  9  9 14 15 20 20 20 20 20 20 20
+> dateMatch(sort(d1), d2, how="before", error.how="NA") 
+ [1] NA NA NA NA  1  4  5  7  7  9  9 14 15 20 20 20 20 20 20 20
+> dateMatch(sort(d1), replace(d2, c(3,9,16,17), NA), how="before", error.how="drop") 
+ [1]  1  4  5  7  7  8  8 14 15 20 20 20 20 20 20 20
+> dateMatch(sort(d1), replace(d2, c(3,9,16,17), NA), how="before", error.how="NA") 
+ [1] NA NA NA NA  1  4  5  7  7  8  8 14 15 20 20 20 20 20 20 20
+> dateMatch(dateParse(c("2001/01/10","2001/03/12")), dateSeq(dateParse("2001/01/01"),by="weeks",len=20), how="after", offset=9)
+[1] 12 20
+> dateMatch(dateParse(c("2001/01/10","2001/03/12")), dateSeq(dateParse("2001/01/01"),by="weeks",len=20), how="after", offset=10)
+[1] 13 NA
+> dateMatch(dateParse(c("2001/01/10","2001/03/12")), dateSeq(dateParse("2001/01/01"),by="weeks",len=20), how="after", offset=-2)
+[1] 1 9
+> dateMatch(dateParse(c("2001/01/10","2001/03/12")), dateSeq(dateParse("2001/01/01"),by="weeks",len=20), how="after", offset=-3)
+[1] NA  8
+> dateMatch(dateParse(c("2001/01/10","2001/01/17","2001/03/12")), dateSeq(dateParse("2001/01/01"),by="weeks",len=20), how="after", offset=10)
+[1] 13 14 NA
+> dateMatch(dateParse(c("2001/01/10","2001/01/17","2001/03/12")), dateSeq(dateParse("2001/01/01"),by="weeks",len=20), how="after", offset=10, value=T)
+[1] "2001-03-26" "2001-04-02" NA          
+> dateMatch(dateParse(c("2001/01/10","2001/01/17","2001/03/12")), as.character(dateSeq(dateParse("2001/01/01"),by="weeks",len=20)), how="after", offset=10, value=T)
+[1] "2001-03-26" "2001-04-02" NA          
+> 

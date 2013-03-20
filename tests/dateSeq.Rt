@@ -98,4 +98,28 @@ Warning message:
 In dateSeq.default("2008/1/2", "2008/1/1") :
   'from' date is later in time than the 'to' date.
 
-
+> # Empty Date prints to look like empty character!
+> structure(numeric(0), class='Date')
+character(0)
+> class(structure(numeric(0), class='Date'))
+[1] "Date"
+> str(structure(numeric(0), class='Date'))
+Class 'Date'  num(0) 
+> class(dateSeq('2011-12-18','2011-12-18', by='bizdays'))
+[1] "character"
+> class(dateSeq(as.Date('2011-12-18'),'2011-12-18', by='bizdays'))
+[1] "Date"
+> class(dateSeq('2011-12-18','2011-12-18', by='days'))
+[1] "character"
+> class(dateSeq(as.Date('2011-12-18'),'2011-12-18', by='days'))
+[1] "Date"
+> dateSeq('2011-12-18','2011-12-18', by='days')
+[1] "2011-12-18"
+> dateSeq(as.Date('2011-12-18'),'2011-12-18', by='days')
+[1] "2011-12-18"
+> dateSeq('2011-12-18','2011-12-18', by='bizdays')
+character(0)
+> # regression test: used to incorrectly return '2013-01-21' as a member of this sequence (it's a holiday)
+> dateSeq('2013-01-19', '2013-01-21', by='bizdays@NYSEC')
+character(0)
+>

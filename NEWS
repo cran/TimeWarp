@@ -1,3 +1,27 @@
+                CHANGES in TimeWarp version 1.0-7 (2013-03-20)
+CHANGES
+    o   fix partial matching in data frame in holidays()
+
+                CHANGES in TimeWarp version 1.0-5 (2012-03-10)
+CHANGES
+    o   make dateParse() able to handle dates like '2012.03.10'
+
+                CHANGES in TimeWarp version 1.0-4 (2012-01-27)
+CHANGES
+    o   make the error.how argument in dateMatch() accept the
+        value 'stop', which causes dateMatch() to stop with
+        an error if no matching date is found.
+
+    o   allow the how argument in dateMatch() to take a two-part
+        value, e.g., how='nearest.stop' is equivalent to
+	how='nearest' and error.how='stop'.
+
+                CHANGES in TimeWarp version 1.0-3 (2011-12-21)
+CHANGES
+    o   make dateSeq() return zero length sequence when given
+        start and end dates that align to be zero length, rather
+        than stopping with an error.
+
                 CHANGES in TimeWarp version 1.0-2 (2011-12-19)
 CHANGES
     o   dateFormat() dynamically figures out if the system needs

@@ -18,6 +18,8 @@ dateFormat.env$initialized <- FALSE
 
 dateFormat.config <- function() {
     # figure out the capabilities of the date formatting on this system
+    # Use the year 0045 as a test case.  Some systems that accept a %04Y
+    # format will format %Y 1991 as '1991', but %Y 0045 as '45'.
     if (strftime(as.POSIXct('0045-01-02'), '%Y-%m-%d') == '0045-01-02')
         dateFormat.env$default.format <- '%Y-%m-%d'
     else if (strftime(as.POSIXct('0045-01-02'), '%04Y-%m-%d') == '0045-01-02')
@@ -55,9 +57,52 @@ dateFormat <- function(date, format = NULL)
         date <- dateParse(date)
 
     if (inherits(date, "dates"))
-        format(as.POSIXct(date), format)
-    else if (inherits(date, "Date") || is(date, "POSIXt"))
-        format(date, format)
+        date <- as.POSIXct(date)
+    if (!(inherits(date, "Date") || is(date, "POSIXt")))
+        stop("unknown date class: '", class(date), "'")
+
+    # Intervene and insert formats %Q and %C, but correctly ignore %%
+    if (any(i <- regexpr('%+Q', format))>=1 && any(attr(i, 'match.length')%%2==0)) {
+        if (length(format) < length(date)) {
+            format <- rep(format, len=length(date))
+            i <- structure(rep(i, len=length(date)), match.length=rep(attr(i, "match.length"), len=length(date)))
+        }
+        j <- (attr(i, 'match.length')%%2)==0
+        if (any(attr(i, 'match.length')[j]>2))
+            i[j] <- i[j] + attr(i, 'match.length')[j]-2
+        substring(format[j], i[j], i[j]+2) <- quarters(date)
+    }
+    if (all(regexpr('%', format)<=0))
+        return(rep(format, len=length(date)))
+    if (.Platform$OS.type=='windows' && any((i <- regexpr('%+y', format))>=1) && any(attr(i, 'match.length')%%2==0)
+        && as.numeric(format(min(date), '%Y')) < 1900) {
+        # '%y' can be buggy on windows for dates < 1900
+        # e.g., format(as.Date('1899-01-01'), '%y') returns "0/" on a Win XP 64 bit OS in 2012
+        if (length(format) < length(date)) {
+            format <- rep(format, len=length(date))
+            i <- structure(rep(i, len=length(date)), match.length=rep(attr(i, "match.length"), len=length(date)))
+        }
+        j <- (attr(i, 'match.length')%%2)==0
+        if (any(attr(i, 'match.length')[j]>2))
+            i[j] <- i[j] + attr(i, 'match.length')[j]-2
+        substring(format[j], i[j], i[j]+2) <- sprintf('%02g', as.numeric(format(date, '%Y')) %% 100)
+    }
+    if (all(regexpr('%', format)<=0))
+        return(rep(format, len=length(date)))
+    if (any((i <- regexpr('%+C', format))>=1) && any(attr(i, 'match.length')%%2==0)) {
+        if (length(format) < length(date)) {
+            format <- rep(format, len=length(date))
+            i <- structure(rep(i, len=length(date)), match.length=rep(attr(i, "match.length"), len=length(date)))
+        }
+        j <- (attr(i, 'match.length')%%2)==0
+        if (any(attr(i, 'match.length')[j]>2))
+            i[j] <- i[j] + attr(i, 'match.length')[j]-2
+        substring(format[j], i[j], i[j]+2) <- sprintf('%02g', as.numeric(format(date, '%Y')) %/% 100)
+    }
+    if (all(regexpr('%', format)<=0))
+        return(rep(format, len=length(date)))
+    if (length(format) > 1)
+        return(mapply(strftime, date, format))
     else
-        stop("unknown date format: '", class(date), "'")
+        return(strftime(date, format))
 }

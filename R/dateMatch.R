@@ -1,46 +1,64 @@
-dateMatch <- function(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.how=c("NA", "drop", "nearest"), nomatch=NA, offset=NULL,value=FALSE)
+dateMatch <- function(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.how=c("NA", "drop", "nearest", "stop"), nomatch=NA, offset=NULL,value=FALSE)
     UseMethod("dateMatch")
 
-dateMatch.character <- function(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.how=c("NA", "drop", "nearest"), nomatch=NA, offset=NULL,value=FALSE)
+dateMatch.character <- function(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.how=c("NA", "drop", "nearest", "stop"), nomatch=NA, offset=NULL,value=FALSE)
 {
     x <- NextMethod('dateMatch')
-    as.character(x)
+    if (value)
+        as.character(x)
+    else
+        x
 }
 
-dateMatch.POSIXct <- function(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.how=c("NA", "drop", "nearest"), nomatch=NA, offset=NULL,value=FALSE)
+dateMatch.POSIXct <- function(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.how=c("NA", "drop", "nearest", "stop"), nomatch=NA, offset=NULL,value=FALSE)
 {
     tz <- attr(date, 'tzone')
     x <- NextMethod('dateMatch')
     # need to convert Date to character before converting back to POSIXct
     # see examples in tests/gotchas.Rt
-    x <- as.POSIXct(as.character(x))
-    if (!is.null(tz))
-        attr(x, 'tzone') <- tz
-    return(x)
+    if (value) {
+        x <- as.POSIXct(as.character(x))
+        if (!is.null(tz))
+            attr(x, 'tzone') <- tz
+        return(x)
+    } else {
+        return(x)
+    }
 }
 
-dateMatch.POSIXlt <- function(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.how=c("NA", "drop", "nearest"), nomatch=NA, offset=NULL,value=FALSE)
+dateMatch.POSIXlt <- function(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.how=c("NA", "drop", "nearest", "stop"), nomatch=NA, offset=NULL,value=FALSE)
 {
     tz <- attr(date, 'tzone')
     x <- NextMethod('dateMatch')
     # need to convert Date to character before converting back to POSIXlt
     # see examples in tests/gotchas.Rt
-    x <- as.POSIXlt(as.character(x))
-    if (!is.null(tz))
-        attr(x, 'tzone') <- tz
-    return(x)
+    if (value) {
+        x <- as.POSIXlt(as.character(x))
+        if (!is.null(tz))
+            attr(x, 'tzone') <- tz
+        return(x)
+    } else {
+        return(x)
+    }
 }
 
-dateMatch.Date <- function(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.how=c("NA", "drop", "nearest"), nomatch=NA, offset=NULL,value=FALSE)
+dateMatch.Date <- function(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.how=c("NA", "drop", "nearest", "stop"), nomatch=NA, offset=NULL,value=FALSE)
 {
-    if (is.null(how))
+    have.error.how <- FALSE
+    if (is.null(how)) {
         how <- "NA"
-    else
+    } else if (is.character(how) && length(strsplit(how, '.', fixed=TRUE)[[1]])>1) {
+        have.error.how <- TRUE
+        error.how <- match.arg(strsplit(how, '.', fixed=TRUE)[[1]][2], c("NA", "drop", "nearest", "stop"))
+        how <- match.arg(strsplit(how, '.', fixed=TRUE)[[1]][1], c("NA", "before", "after", "nearest", "interp"))
+    } else {
         how <- match.arg(how)
-    if (is.null(error.how))
-        error.how <- "NA"
-    else
-        error.how <- match.arg(error.how)
+    }
+    if (!have.error.how)
+        if (is.null(error.how))
+            error.how <- "NA"
+        else
+            error.how <- match.arg(error.how)
 
     # return indices of x in table
     if (!inherits(x, 'Date'))
@@ -70,6 +88,9 @@ dateMatch.Date <- function(x, table, how=c("NA", "before", "after", "nearest", "
 					idx[idxNA] <- nomatch
 				} else if (error.how=='drop'){
 					idx <- idx[!idxNA]
+				} else if (error.how=='stop'){
+                                    stop('no match found for ', sum(idxNA), ' dates, e.g.: ',
+                                         paste(x[which(idxNA)[seq(1,min(3,sum(idxNA)))]], collapse=', '))
 				}
 			}
 		} else if (how=="before"){
@@ -85,6 +106,11 @@ dateMatch.Date <- function(x, table, how=c("NA", "before", "after", "nearest", "
 					idx <- idx[idx>0]
 				} else if (error.how=='nearest') {
 					idx[idx==0] <- 1
+				} else if (error.how=='stop'){
+                                    idxBad <- idx==0
+                                    if (any(idxBad))
+                                        stop('no match found for ', sum(idxBad), ' dates, e.g.: ',
+                                             paste(x[which(idxBad)[seq(1,min(3,sum(idxBad)))]], collapse=', '))
 				}
 			}
 		} else if (how=="after"){
@@ -97,6 +123,11 @@ dateMatch.Date <- function(x, table, how=c("NA", "before", "after", "nearest", "
 					idx <- idx[idx<=N]
 				} else if (error.how=='nearest') {
 					idx[idx>N] <- N
+				} else if (error.how=='stop'){
+                                    idxBad <- idx>N
+                                    if (any(idxBad))
+                                        stop('no match found for ', sum(idxBad), ' dates, e.g.: ',
+                                             paste(x[which(idxBad)[seq(1,min(3,sum(idxBad)))]], collapse=', '))
 				}
 			}
 		} else if (how=="nearest"){
@@ -156,6 +187,11 @@ dateMatch.Date <- function(x, table, how=c("NA", "before", "after", "nearest", "
 				} else if (error.how=='nearest') {
 					idx[idx==-1] <- N
 					idx[idx==0] <- 1
+				} else if (error.how=='stop') {
+                                    idxBad <- idx<1
+                                    if (any(idxBad))
+                                        stop('no match found for ', sum(idxBad), ' dates, e.g.: ',
+                                             paste(x[which(idxBad)[seq(1,min(3,sum(idxBad)))]], collapse=', '))
 				}
 			}
 		}

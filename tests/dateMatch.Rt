@@ -1,3 +1,4 @@
+> options(error=function() NULL)
 > dateMatch(dateParse(c("2001/01/10","2001/03/12")), dateSeq(dateParse("2001/01/01"),by="weeks",len=20), how="after")
 [1]  3 11
 > dateMatch(dateParse(c("2001/01/10","2001/03/12")), dateSeq(dateParse("2001/01/01"),by="weeks",len=20), how="before")
@@ -118,3 +119,29 @@ numeric(0)
 > dateMatch(dateParse(c("2001/01/10","2001/01/17","2001/03/12")), as.character(dateSeq(dateParse("2001/01/01"),by="weeks",len=20)), how="after", offset=10, value=T)
 [1] "2001-03-26" "2001-04-02" NA          
 > 
+> dateMatch(c("2001/01/10","2001/03/12"), dateSeq("2001/01/01",by="weeks",len=20), error.how="stop")
+Error in dateMatch.default(c("2001/01/10", "2001/03/12"), dateSeq("2001/01/01",  : 
+  no match found for 1 dates, e.g.: 2001-01-10
+> dateMatch(c("2001/01/10","2001/03/12"), dateSeq("2001/01/01",by="weeks",len=20), how='nearest', error.how="stop")
+[1]  2 11
+> dateMatch(c("2001/01/10","2001/03/12"), dateSeq("2001/01/01",by="weeks",len=20), how='before', error.how="stop")
+[1]  2 11
+> dateMatch(c("2001/01/10","2001/03/12"), dateSeq("2001/01/01",by="weeks",len=20), how='after', error.how="stop")
+[1]  3 11
+> dateMatch(c("2001/01/10","2001/03/12"), dateSeq("2001/01/01",by="weeks",len=20), how='nearest')
+[1]  2 11
+> dateMatch(c("2001/01/10","2001/03/12"), dateSeq("2001/01/01",by="weeks",len=20), how='before')
+[1]  2 11
+> dateMatch(c("2001/01/10","2001/03/12"), dateSeq("2001/01/01",by="weeks",len=20), how='after')
+[1]  3 11
+> 
+> dateMatch(c("2001/01/10","2001/03/12"), dateSeq("2001/01/01",by="weeks",len=20), how='interp')
+[1]  2.285714 11.000000
+> dateMatch(c("2001/01/10","2001/03/12"), dateSeq("2001/01/01",by="weeks",len=20), how='interp', error.how='stop')
+[1]  2.285714 11.000000
+> dateMatch(c("2000/01/01","2001/01/10","2001/03/12"), dateSeq("2001/01/01",by="weeks",len=20), how='interp')
+[1]        NA  2.285714 11.000000
+> dateMatch(c("2000/01/01","2001/01/10","2001/03/12"), dateSeq("2001/01/01",by="weeks",len=20), how='interp.stop')
+Error in dateMatch.default(c("2000/01/01", "2001/01/10", "2001/03/12"),  : 
+  no match found for 1 dates, e.g.: 2000-01-01
+>

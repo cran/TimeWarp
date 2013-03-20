@@ -15,8 +15,8 @@ dateFormat(date, format = NULL)
     as "YYYY-MM-DD" under both Windows and Linux. }
 }
 \details{
-Unfortunately, 'format.POSIXct' is not compatible between
-Linux and Windows R. Here are a few for the difference found in 2008:
+Unfortunately, 'format.POSIXct' does not have the same behavior on
+Linux and Windows. Here are a few for the difference found in 2008:
 \enumerate{
 \item{Windows version does not recognize "\%y" format.}
 \item{Windows version does not recognize width arguments like
@@ -26,11 +26,20 @@ Linux and Windows R. Here are a few for the difference found in 2008:
    minimal width.}
  }
 
+ This function tries to provide identical behavior under Linux and
+ Windows and Mac.
 This function formats any kind of data objects to character
 strings with the default format "\%04Y-\%02m-\%02d" under
 both Linux and Windows.  It does this by choosing a system-specific
 default format and then calling \code{format()}.
+
+Additional format specifications are also provided:
+\itemize{
+  \item{'\%Q' for quarter, as 'Q1', etc (the value returned by \code{quarters()}}
+  \item{'\%C' for century, always 2 digits (e.g., '20' for 2013)}
+  }
 }
+
 \value{
 The formatted dates as a vector of character data.
 }

@@ -48,7 +48,6 @@ dateSeq.Date <- function(from = NULL, to = NULL, year = NULL, by = "days",
                     k.by = 1, length.out = NULL, holidays = NULL,
                     align.by = TRUE, extend = FALSE, range = NULL,
                     week.align = NULL) {
-
     ## Checking 'by' and 'holidays' arguments.
     if ((at.pos <- regexpr("@",by)[1]) != -1) {
         if (length(holidays)!=0)
@@ -126,8 +125,18 @@ dateSeq.Date <- function(from = NULL, to = NULL, year = NULL, by = "days",
     if (!is.null(week.align) && (!is.numeric(week.align) || (week.align < 0 || week.align > 6)))
         stop("week.align must be between 0 and 6, where 0 is Sunday")
 
+    if (is.null(from))
+      stop("'from' must be specified")
+
+    if (!is.null(to) && from > to)
+    {
+        warning("'from' date is later in time than the 'to' date.")
+        return(emptyDate())
+    }
+
     if (align.by)
     {
+        ## Don't use holidays for align.by
         if (extend)
             dir <- -1
         else
@@ -142,14 +151,9 @@ dateSeq.Date <- function(from = NULL, to = NULL, year = NULL, by = "days",
         }
     }
 
-    if (is.null(from))
-      stop("'from' must be specified")
-
+    ## Might have made from > to by the alignment -- don't warn about this
     if (!is.null(to) && from > to)
-    {
-        warning("'from' date is later in time than the 'to' date.")
         return(emptyDate())
-    }
 
     ### END of argument checking
 
@@ -199,7 +203,7 @@ dateSeq.Date <- function(from = NULL, to = NULL, year = NULL, by = "days",
                 ## Increment to next day, wrapping by 7
                 w <- (w + 1) %% 7
             }
-            x <- x[1:(i-1)]
+            x <- x[seq(len=i-1)]
         }
     }
 

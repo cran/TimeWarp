@@ -13,19 +13,19 @@ holidays <- function(years, type, silent = FALSE)
 
         hDays <- .holidays[[type]]
 
-        if (!silent && any(years < min(hDays$year)))
+        if (!silent && any(years < min(hDays$years)))
             warning(paste("Do not have any '", type,
                           "' holiday data for year(s) ",
-                          paste(unique(years[years < min(hDays$year)])
+                          paste(unique(years[years < min(hDays$years)])
                                 , collapse = ", "), ".", sep = ""))
 
-        if (!silent && any(years > max(hDays$year)))
+        if (!silent && any(years > max(hDays$years)))
             warning(paste("Do not have any '", type,
                           "' holiday data for year(s) ",
-                          paste(unique(years[years > max(hDays$year)])
+                          paste(unique(years[years > max(hDays$years)])
                                 , collapse = ", "), ".", sep = ""))
 
-        hDays[hDays$year %in% years, 'days']
+        hDays[hDays$years %in% years, 'days']
     }
 
     structure(unique(sort(unlist(sapply(type, extractHolidays,

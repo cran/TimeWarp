@@ -7,7 +7,8 @@ Return the indices of dates in a table that match, according to rules "before", 
 methods for \code{character}, \code{Date}, \code{POSIXct}, and \code{POSIXlt}.
 }
 \usage{
-dateMatch(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.how=c("NA", "drop", "nearest"), nomatch=NA, offset=NULL, value=FALSE)
+dateMatch(x, table, how=c("NA", "before", "after", "nearest", "interp"),
+          error.how=c("NA", "drop", "nearest", "stop"), nomatch=NA, offset=NULL, value=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -26,7 +27,11 @@ dateMatch(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.h
 			\item{\code{"nearest"}}{the element in \code{table} that is nearest}
 			\item{\code{"interp"}}{an interpolated index}
 			\item{\code{"NA"}}{return the \code{nomatch} value}
-		}
+		      }
+    For convenience, \code{how} can specify both \code{how} and
+			\code{error.how} separated with a period, e.g.,
+			\code{how="before.nearest"} is equivalent to
+			\code{how="before"} and \code{error.how="nearest"}
 	}
 	\item{error.how}{
 
@@ -39,8 +44,12 @@ dateMatch(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.h
 			\item{\code{"NA"}}{return the "nomatch" value}
 			\item{\code{"drop"}}{causes non-matched values to be \code{dropped}}
 			\item{\code{"nearest"}}{pick the nearest value in \code{table}.}
+			\item{\code{"stop"}}{stop with an error.}
 		}
 
+		See the note on argument \code{how} for another way of
+	specifying \code{error.how}.  A value for \code{error.how} is
+	ignored if the value for \code{how} has a period in it.
 	}
 	\item{nomatch}{
 		The value to return for \code{nomatch} cases. If \code{value=TRUE}, then nomatch must be a \code{Date} value, Otherwise it must be a numeric value. \code{NA} is the default.
@@ -72,12 +81,14 @@ In the latter case, the class of the returned value is the same as the class of 
   \code{POSIXlt}.  For \code{x} of other classes, the class of the
   returned value is \code{Date}, but this may change in the future.
 
-	
+
 }
 \examples{
 d1 <- dateParse(c("2001/01/10", "2001/03/12"))
 d2 <- dateSeq(dateParse("2001/01/01"), by = "weeks", len = 20)
 dateMatch(d1, dateParse(), how = "nearest", error.how = "drop")
+dateMatch(d1, dateParse(), how = "nearest", error.how = "stop")
+dateMatch(d1, dateParse(), how = "nearest.stop")
 dateMatch(d1, d2, how = "after")
 dateMatch(d1, d2, how = "after", offset = -3)
 dateMatch(dateParse(c("2001/01/10", "2001/01/17", "2001/03/12")),

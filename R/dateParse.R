@@ -56,7 +56,7 @@ dateParse <- function(x, format=NULL, stop.on.error=TRUE, quick.try=TRUE,
     if (quick.try && length(x)>20) {
         # quickly test just the first few elements of x so that we
         # can stop or return NULL quickly if we can't convert
-        m <- match.call(expand=F)
+        m <- match.call(expand.dots=F)
         m$x <- x[1:min(5, length(x))]
         m$quick.try <- F
         quick.result <- eval(m, sys.parent())
@@ -98,19 +98,20 @@ dateParse <- function(x, format=NULL, stop.on.error=TRUE, quick.try=TRUE,
             delimiter <- ""
     }
 
-    if (delimiter==".") delimiter <- "\\."
+    delimiter.regexp <- if (delimiter==".") "\\." else delimiter
 
     date.ymd8.expr <- "[0-9]{8}"
     date.Ymd.expr <- paste("[0-9]{4}", "[01]?[0-9]", "[0-3]?[0-9]",
-                           sep=delimiter)
+                           sep=delimiter.regexp)
     date.mdY.expr <- paste("[01]?[0-9]", "[0-3]?[0-9]", "[0-9]{4}",
-                           sep=delimiter)
+                           sep=delimiter.regexp)
     if (!dross.remove) {
         date.ymd8.expr <- paste("^", date.ymd8.expr, "$", sep="")
         date.Ymd.expr <- paste("^", date.Ymd.expr, "$", sep="")
         date.mdY.expr <- paste("^", date.mdY.expr, "$", sep="")
     }
 
+    m1 <- m2 <- m3 <- FALSE
     if (delimiter!="" && all((m1<-regexpr(date.Ymd.expr, x.not.na))>0)) {
         if (dross.remove)
             x[x.not.na.idx] <- substring(x.not.na, m1,

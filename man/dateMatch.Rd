@@ -8,7 +8,8 @@ methods for \code{character}, \code{Date}, \code{POSIXct}, and \code{POSIXlt}.
 }
 \usage{
 dateMatch(x, table, how=c("NA", "before", "after", "nearest", "interp"),
-          error.how=c("NA", "drop", "nearest", "stop"), nomatch=NA, offset=NULL, value=FALSE)
+          error.how=c("NA", "drop", "nearest", "stop"),
+          nomatch=NA, offset=NULL, value=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

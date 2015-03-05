@@ -46,26 +46,23 @@ dateWarp.Date <- function(date, spec, holidays = NULL, by = NULL,
     if (!hasArg(spec))
         stop("'spec' argument missing.")
 
-    if (!inherits(date, "Date"))
-    {
+    if (!inherits(date, "Date")) {
         date <- dateParse(date)
         if (is.null(date))
             stop("'date' argument must inherit or be convertible from the 'Date' class.")
     }
 
-    if (!is.null(by))
-    {
+    if (!is.null(by)) {
         if (!is.character(by))
             stop("'by' must be a character vector.")
 
-        if (length(by) > 1)
-        {
+        if (length(by) > 1) {
             by <- by[1]
             warning("only the first element of 'by' will be used.")
         }
 
-        if ((atPos <- regexpr("@", by)[1]) > 0)
-        {
+        # TODO: parse direction & k.by out of by
+        if ((atPos <- regexpr("@", by)[1]) > 0) {
             byStr <- by
             by <- substring(byStr, 1, atPos - 1)
 
@@ -76,25 +73,20 @@ dateWarp.Date <- function(date, spec, holidays = NULL, by = NULL,
             if (holidays == "")
                 stop("could not parse holiday name out of '", byStr, "'.")
 
-            if (by == "" ||
-                !(by %in% c('days', 'bizdays', 'weeks', 'months', 'years')))
+            if (by == "")
                 stop("could not parse 'by' out of '", byStr, "'.")
         }
-        else
-            if (!(by %in% c('days', 'bizdays', 'weeks', 'months', 'years')))
-                stop("'by' must contain only the values 'days', 'bizdays','weeks', 'months' or 'years'.")
+        if (!(by %in% c('days', 'bizdays', 'weeks', 'months', 'years')))
+            stop("'by' must contain only the values 'days', 'bizdays','weeks', 'months' or 'years'.")
     }
 
-    if (!is.null(holidays))
-    {
+    if (!is.null(holidays)) {
         if ((!is.null(by) && by != "bizdays") &&
-            !("bizdays" %in% unlist(spec, use.names = FALSE)))
-        {
+            !is.list(spec) && !("bizdays" %in% unlist(spec, use.names = FALSE))) {
+            # This test doesn't work with spec that is a list
             warning("ignoring holidays argument. Only relevant when 'by = \"bizdays\"'.")
             holidays <- NULL
-        }
-        else if (!all(holidays %in% allHolidays()))
-        {
+        } else if (!all(holidays %in% allHolidays())) {
             stop(paste('no', holidays[!(holidays %in% allHolidays())][1],'holidays exist.'))
         }
     }
@@ -113,10 +105,8 @@ dateWarp.Date <- function(date, spec, holidays = NULL, by = NULL,
     if (is.numeric(spec) || is.character(spec))
         spec <- list(spec)
 
-    if (is.list(spec))
-    {
-        for (i in seq_along(spec))
-        {
+    if (is.list(spec)) {
+        for (i in seq_along(spec)) {
             byUse <- NULL
             holidaysUse <- NULL
 
@@ -127,32 +117,28 @@ dateWarp.Date <- function(date, spec, holidays = NULL, by = NULL,
             else
                 op <- spec[[i]]
 
-            if (is.character(op) && (name == "" || name == "shift"))
-            {
+            if (is.character(op) && (name == "" || name == "shift")) {
                 ## Parse something like "+3 bizdays@NYSEC", "+3 bizdays", or "+3".
                 ## (It's necessary to supply 'by' to dateWarp(), but it can be picked
                 ## up from elsewhere.)
                 opStr <- op
 
-                if ((spacePos <- regexpr(" ", opStr)[1]) != -1)
-                {
-                    byStr <- substring(opStr, spacePos + 1)
-                    opStr <- substring(opStr, 1, spacePos - 1)
+                if ((spPos <- regexpr(" ", opStr)[1]) != -1) {
+                    byStr <- substring(opStr, spPos + 1)
+                    opStr <- substring(opStr, 1, spPos - 1)
 
-                    if ((atPos <- regexpr("@", byStr)[1]) > 0)
-                    {
+                    if ((atPos <- regexpr("@", byStr)[1]) > 0) {
                         byUse <- substring(byStr, 1, atPos - 1)
                         holidaysUse <- substring(byStr, atPos + 1)
                         if (holidaysUse == "")
                             stop("could not parse holiday name out of '", byStr, "'.")
-                    }
-                    else
-                    {
+                    } else {
                         byUse <- byStr
                     }
-                    if (byUse == "" ||
-                        !(byUse %in% c('days', 'bizdays', 'weeks', 'months', 'years')))
+                    if (byUse == "")
                         stop("could not parse 'by' out of '", byStr, "'.")
+                    if (!(byUse %in% c('days', 'bizdays', 'weeks', 'months', 'years')))
+                        stop("'by' must contain only the values 'days', 'bizdays','weeks', 'months' or 'years'.")
                 }
                 # all that is left in "a.str" should a number like "-1" or "+3"
                 op <- as.numeric(opStr)
@@ -163,10 +149,8 @@ dateWarp.Date <- function(date, spec, holidays = NULL, by = NULL,
                          if (sum(is.na(op))>3) " ...")
             }
 
-            if (is.numeric(op))
-            {
-                if (name == "" || name == "shift")
-                {
+            if (is.numeric(op)) {
+                if (name == "" || name == "shift") {
                     if (is.null(byUse) && !is.null(by))
                         byUse <- by
                     if (is.null(byUse))
@@ -176,8 +160,8 @@ dateWarp.Date <- function(date, spec, holidays = NULL, by = NULL,
                         holidaysUse <- holidays
 
                     res <- emptyDate()
-                    for (i in seq_along(op))
-                    {
+                    ## TODO: replace this for loop with vectorized call?
+                    for (i in seq_along(op)) {
                         if (op[i] == 0)
                             tmp <- dateAlign(date, by = byUse, direction = direction,
                                              holidays = holidaysUse, silent = TRUE)
@@ -196,49 +180,34 @@ dateWarp.Date <- function(date, spec, holidays = NULL, by = NULL,
 
                     date <- res
 
-                }
-                else if (name == "unique")
-                {
+                } else if (name == "unique") {
                     date <- unique(date)
-                }
-                else
-                {
+                } else {
                     stop("names of integer operations can be '', 'shift' or 'unique'.")
                 }
 
-            }
-            else if (is.logical(op) && name == "unique")
-            {
+            } else if (is.logical(op) && name == "unique") {
                 date <- unique(date)
-            }
-            else if (inherits(op, "Date"))
-            {
+            } else if (inherits(op, "Date")) {
                 if (name == "latest")
                     date <- pmin(date, op)
                 else if (name=="earliest")
                     date <- pmax(date, op)
                 else
                     stop("names of Date can be \"latest\" or \"earliest\"")
-            }
-            else if (is.list(op))
-            {
+            } else if (is.list(op)) {
                 ## A list element is treated as a list of arguments for dateAlign or dateShift.
-                if (name == "align" && any(is.element(c("to", "table"), names(op))))
-                {
+                if (name == "align" && any(is.element(c("to", "table"), names(op)))) {
                     names(op)[names(op) == "to"] <- "table"
                     date <- op$table[do.call("dateMatch", c(list(x = date), op))]
-                }
-                else if (name == "align")
-                {
+                } else if (name == "align") {
                     ## For arguments "by", "direction", and "holidays", substitute a default if not supplied.
-                    if (all(is.na(pmatch(names(op), "by"))))
-                    {
+                    if (all(is.na(pmatch(names(op), "by")))) {
                         if (is.null(by))
                             stop("must supply 'by'.")
                         op$by <- by
                     }
-                    if ((atPos <- regexpr("@", op$by)[1]) > 0)
-                    {
+                    if ((atPos <- regexpr("@", op$by)[1]) > 0) {
                         if (any(!is.na(i <- pmatch(names(op), "holidays"))))
                             stop("double specification of holidays in '", name, "' component.")
                         op$holidays <- substring(op$by, atPos+1)
@@ -253,18 +222,19 @@ dateWarp.Date <- function(date, spec, holidays = NULL, by = NULL,
                         op$holidays <- holidays
 
                     date <- do.call("dateAlign", c(list(x = date, silent = TRUE), op))
-                }
-                else if (name == "shift")
-                {
-                    ## For arguments "by" and "holidays", substitute a default if not supplied
-                    if (all(is.na(pmatch(names(op), "by"))))
-                    {
-                        if (is.null(by))
-                            stop("must supply 'by'.")
-                        op$by <- by
+                } else if (name == "shift") {
+                    ## TODO: need tests for parsing 'N bizdays@HOLIDAYS' here
+                    ## Check if unnamed item looks like '3 bizdays' or '-3 bizdays@NYSEC'
+                    if (all(is.na(pmatch(names(op), "k.by")))
+                        && length(i <- which(names(op) == ""))
+                        && is.character(op[[i]])
+                        && (spPos <- regexpr(" ", op[[i]])[1]) != -1) {
+                        if (any(!is.na(i <- pmatch(names(op), "by"))))
+                            stop("double specification of 'by' in '", name, "' component.")
+                        op$by <- substring(op[[i]], spPos + 1)
+                        op$k.by <- substring(op[[i]], 1, spPos - 1)
                     }
-                    if ((atPos <- regexpr("@", op$by)[1]) > 0)
-                    {
+                    if ((atPos <- regexpr("@", op$by)[1]) > 0) {
                         if (any(!is.na(i <- pmatch(names(op), "holidays"))))
                             stop("double specification of holidays in '", name, "' component.")
                         op$holidays <- substring(op$by, atPos+1)
@@ -274,8 +244,7 @@ dateWarp.Date <- function(date, spec, holidays = NULL, by = NULL,
                     }
                     ## Check if unnamed item is intended to be a k.by argument.
                     if (all(is.na(pmatch(names(op), "k.by"))) &&
-                        length(i <- which(names(op) == "")))
-                    {
+                        length(i <- which(names(op) == ""))) {
                         if (is.numeric(op[[i]]))
                             names(op)[i] <- "k.by"
                     }
@@ -285,15 +254,13 @@ dateWarp.Date <- function(date, spec, holidays = NULL, by = NULL,
                     if (all(is.na(pmatch(names(op), "holidays"))))
                         op$holidays <- holidays
 
-                    if ("k.by" %in% names(op) && op$k.by < 0)
-                    {
+                    if ("k.by" %in% names(op) && op$k.by < 0) {
                         op$k.by <- -op$k.by
                         op$direction <- -op$direction
                     }
 
                     date <- do.call("dateShift", c(list(x = date, silent = TRUE), op))
-                }
-                else
+                } else
                     stop("names of lists must be 'align' or 'shift'.")
             }
         }

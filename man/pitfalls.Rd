@@ -1,5 +1,6 @@
 \name{pitfalls}
 \alias{pitfalls}
+\alias{gotchas}
 \docType{package}
 \title{Pitfalls in date class conversions}
 \description{
@@ -28,8 +29,8 @@
 > # the following morning.
 > x <- as.POSIXct('2011-12-10 16:55:26 EST', tz='EST')+(0:9)*3600
 >
-> # The first 8 days are in the evening of Dec 10, the last 10 in the
-> # morning of Dec 11.
+> # The first 8 date/times are in the evening of Dec 10, the last 2 in the
+> # morning of Dec 11 (in EST).
 >
 > as.character(x)
  [1] "2011-12-10 16:55:26" "2011-12-10 17:55:26" "2011-12-10 18:55:26"
@@ -44,6 +45,36 @@
 > as.Date(x)
  [1] "2011-12-10" "2011-12-10" "2011-12-10" "2011-12-11" "2011-12-11"
  [6] "2011-12-11" "2011-12-11" "2011-12-11" "2011-12-11" "2011-12-11"
+>
+> # Another way of looking at the as.Date(POSIXct)
+>
+> data.frame(as.character(x), as.Date(as.character(x)), as.Date(x), check.names=F)
+       as.character(x) as.Date(as.character(x)) as.Date(x)
+1  2011-12-10 16:55:26               2011-12-10 2011-12-10
+2  2011-12-10 17:55:26               2011-12-10 2011-12-10
+3  2011-12-10 18:55:26               2011-12-10 2011-12-10
+4  2011-12-10 19:55:26               2011-12-10 2011-12-11
+5  2011-12-10 20:55:26               2011-12-10 2011-12-11
+6  2011-12-10 21:55:26               2011-12-10 2011-12-11
+7  2011-12-10 22:55:26               2011-12-10 2011-12-11
+8  2011-12-10 23:55:26               2011-12-10 2011-12-11
+9  2011-12-11 00:55:26               2011-12-11 2011-12-11
+10 2011-12-11 01:55:26               2011-12-11 2011-12-11
+>
+> # as.Date(POSIXlt) works differently from as.Date(POSIXct)
+>
+> data.frame(as.character(x), as.Date(x), as.Date(as.POSIXlt(x)), check.names=F)
+       as.character(x) as.Date(x) as.Date(as.POSIXlt(x))
+1  2011-12-10 16:55:26 2011-12-10             2011-12-10
+2  2011-12-10 17:55:26 2011-12-10             2011-12-10
+3  2011-12-10 18:55:26 2011-12-10             2011-12-10
+4  2011-12-10 19:55:26 2011-12-11             2011-12-10
+5  2011-12-10 20:55:26 2011-12-11             2011-12-10
+6  2011-12-10 21:55:26 2011-12-11             2011-12-10
+7  2011-12-10 22:55:26 2011-12-11             2011-12-10
+8  2011-12-10 23:55:26 2011-12-11             2011-12-10
+9  2011-12-11 00:55:26 2011-12-11             2011-12-11
+10 2011-12-11 01:55:26 2011-12-11             2011-12-11
 >
 > # Sensible conversion POSIXct->character->Date.
 > as.Date(as.character(x))

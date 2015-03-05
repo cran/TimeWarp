@@ -3,7 +3,7 @@
 > Sys.setlocale("LC_TIME", "C")
 [1] "C"
 > Sys.setenv(TZ='EST') # so that tests that print out time zone work everywhere
-> options(error = function() NULL, showErrorCalls = FALSE)
+> options(error = function() NULL, showErrorCalls = FALSE, warn=1)
 > dow <- function(x) if (!is.null(x)) { x <- dateParse(x); paste(format(x, "%Y/%m/%d"), " (", weekdays(x, T), ")", sep = "") } else ""
 > span <- function(x, len) { res <- rep("                ", len); res[1:length(x)] <- x; res}
 > pp <- function(x, y = NULL) if (length(x) == length(y)) cat(paste(dow(x), "->", dow(y), "\n"), sep = "") else { len <- max(length(x), length(y)); cat(paste(span(dow(x), len), "  ", span(dow(y), len), "\n"), sep = "") }
@@ -302,7 +302,8 @@
 2009/01/06 (Tue) -> 2009/01/07 (Wed) 
 > pp(x3, dateWarp(x3, "+1 NYSEC"))
 #@ ignore-linebreaks
-Error in dateWarp.Date(x3, "+1 NYSEC") : could not parse 'by' out of 'NYSEC'.
+Error in dateWarp.Date(x3, "+1 NYSEC") : 
+  'by' must contain only the values 'days', 'bizdays','weeks', 'months' or 'years'.
 > pp(x3, dateWarp(x3, "+1 bizdays"))
 2008/12/27 (Sat) -> 2008/12/29 (Mon) 
 2008/12/28 (Sun) -> 2008/12/29 (Mon) 

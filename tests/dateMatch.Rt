@@ -1,4 +1,4 @@
-> options(error=function() NULL)
+> options(error=function() NULL, warn=1)
 > dateMatch(dateParse(c("2001/01/10","2001/03/12")), dateSeq(dateParse("2001/01/01"),by="weeks",len=20), how="after")
 [1]  3 11
 > dateMatch(dateParse(c("2001/01/10","2001/03/12")), dateSeq(dateParse("2001/01/01"),by="weeks",len=20), how="before")
@@ -145,3 +145,6 @@ Error in dateMatch.default(c("2001/01/10", "2001/03/12"), dateSeq("2001/01/01", 
 Error in dateMatch.default(c("2000/01/01", "2001/01/10", "2001/03/12"),  : 
   no match found for 1 dates, e.g.: 2000-01-01
 >
+> dateMatch(structure(c(13283, 13466, 13559, 13654, 13787), class = "Date"), as.Date('2007-05-21'), how = "nearest", value = T)
+[1] "2007-05-21" "2007-05-21" "2007-05-21" "2007-05-21" "2007-05-21"
+> 

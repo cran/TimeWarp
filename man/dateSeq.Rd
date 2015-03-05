@@ -7,7 +7,10 @@ Generate a sequence of dates. Based on \code{\link{seq.Date}}, but adds support 
   methods for \code{character}, \code{Date}, \code{POSIXct}, and \code{POSIXlt}.
 }
 \usage{
-dateSeq(from = NULL, to = NULL, year = NULL, by = "days", k.by = 1, length.out = NULL, holidays = NULL, align.by = TRUE, extend = FALSE, range = NULL, week.align = NULL)
+dateSeq(from = NULL, to = NULL, year = NULL,
+        by = "days", k.by = 1, length.out = NULL,
+        holidays = NULL, align.by = TRUE, extend = FALSE,
+        range = NULL, week.align = NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{

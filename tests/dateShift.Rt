@@ -3,7 +3,7 @@
 > Sys.setlocale("LC_TIME", "C")
 [1] "C"
 > Sys.setenv(TZ='EST') # so that tests that print out time zone work everywhere
-> options(error = function() NULL, showErrorCalls = FALSE)
+> options(error = function() NULL, showErrorCalls = FALSE, warn=1)
 > date <- as.Date("2009/1/1") + -5:5; cat(paste(format(date), " ", format(dateShift(date, by = "days", k.by = 1, direction = -1))), sep = "\n")
 2008-12-27   2008-12-26
 2008-12-28   2008-12-27

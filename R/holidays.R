@@ -83,13 +83,17 @@ isHoliday <- function(dates, type)
         else
             dates <- as.Date(dates)
 
-    if (type == "NONE")
-        return(rep(FALSE, length(dates)))
-    else
-        if (!(type %in% ls(envir=.holidays)))
-            stop(paste('no', type, 'holidays exist.'))
+    if (inherits(type, 'Date')) {
+        return(dates %in% type)
+    } else {
+        if (type == "NONE")
+            return(rep(FALSE, length(dates)))
+        else
+            if (!(type %in% ls(envir=.holidays)))
+                stop(paste('no', type, 'holidays exist.'))
 
-    dates %in% .holidays[[type]]$days
+        return(dates %in% .holidays[[type]]$days)
+    }
 }
 
 

@@ -3,7 +3,7 @@
 > Sys.setlocale("LC_TIME", "C")
 [1] "C"
 > Sys.setenv(TZ='EST') # so that tests that print out time zone work everywhere
-> options(error=function() NULL)
+> options(error=function() NULL, warn=1)
 > dateParse(c("1962/06/20","1962/10/30","NA"))
 [1] "1962-06-20" "1962-10-30" NA          
 > class(dateParse(c("1962/06/20","1962/10/30","NA")))

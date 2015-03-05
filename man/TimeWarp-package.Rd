@@ -56,7 +56,8 @@ Brian D. Ripley and Kurt Hornik. Date-time classes. \url{http://cran.r-project.o
 \examples{
 library(Holidays)
 # View counts of registered holidays by year
-sapply(as.character(1998:2012), function(y) sapply(allHolidays(), function(h) length(holidays(y, h, silent=TRUE))))
+sapply(as.character(1998:2012), function(y)
+       sapply(allHolidays(), function(h) length(holidays(y, h, silent=TRUE))))
 
 # Find US option expiration dates in 2011 (The pricing day, usually a Friday)
 

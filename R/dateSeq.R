@@ -125,31 +125,33 @@ dateSeq.Date <- function(from = NULL, to = NULL, year = NULL, by = "days",
     if (!is.null(week.align) && (!is.numeric(week.align) || (week.align < 0 || week.align > 6)))
         stop("week.align must be between 0 and 6, where 0 is Sunday")
 
-    if (is.null(from))
-      stop("'from' must be specified")
-
-    if (!is.null(to) && from > to)
+    if (!is.null(to) && !is.null(from) && from > to)
     {
         warning("'from' date is later in time than the 'to' date.")
         return(emptyDate())
     }
 
+    align.dir <- if (extend) -1 else 1
     if (align.by)
     {
         ## Don't use holidays for align.by
-        if (extend)
-            dir <- -1
-        else
-            dir <- 1
-
-        from <- dateAlign(from,by=by,k.by=k.by,week.align=week.align,direction=dir)
+        if (!is.null(from))
+            from <- dateAlign(from, by=by, k.by=k.by, week.align=week.align, direction=align.dir)
 
         if (!is.null(to))
-        {
-            dir <- -dir
-            to <- dateAlign(to,by=by,k.by=k.by,week.align=week.align,direction=dir)
-        }
+            to <- dateAlign(to, by=by, k.by=k.by, week.align=week.align, direction= -align.dir)
     }
+
+    if (!is.null(to) && !is.null(length.out)) {
+        from1 <- dateShift(to, by=by, k.by=k.by * (length.out-1), direction=-1, holidays=holidays)
+        if (align.by)
+            from1 <- dateAlign(from1, by=by, k.by=k.by, week.align=week.align, direction=align.dir)
+        if (!is.null(from) && from1 != from)
+            stop("supplied 'from'=", from, " is inconsistent with ", from1, " calculated from 'to' and 'length.out'")
+        from <- from1
+    }
+    if ((!is.null(from)) + (!is.null(to)) + (!is.null(length.out)) < 2)
+        stop("must specify two of 'from', 'to' and 'length.out'")
 
     ## Might have made from > to by the alignment -- don't warn about this
     if (!is.null(to) && from > to)
@@ -161,10 +163,11 @@ dateSeq.Date <- function(from = NULL, to = NULL, year = NULL, by = "days",
     if (by != 'bizdays'){
         rby <- paste(k.by,sub('s','',by))
 
-        if (is.null(to))
-            x <- seq(from=from,by=rby,length.out=length.out)
+        ## Don't supply 'to' because we always calculate 'from'
+        if (!is.null(from) && !is.null(to))
+            x <- seq(from=from, to=to, by=rby)
         else
-            x <- seq(from=from,to=to,by=rby,length.out=length.out)
+            x <- seq(from=from, by=rby,length.out=length.out)
     } else if (by == 'bizdays'){
         if (is.null(to)){
             x <- rep(from,length.out)

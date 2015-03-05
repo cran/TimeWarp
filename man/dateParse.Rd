@@ -23,7 +23,7 @@ returns \code{NA} for elements that cannot be parsed.)
 }
 \usage{
 dateParse(x, format = NULL, stop.on.error = TRUE, quick.try = TRUE,
-dross.remove = FALSE, na.strings = c("NA", ""), ymd8 = FALSE)
+dross.remove = FALSE, na.strings = c("NA", ""), ymd8 = TRUE, use.cache = TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -52,8 +52,14 @@ return \code{NULL}?
         }
         \item{ymd8}{
           Should an 8-digit format with no separators be tried?  Default is
-          \code{FALSE} because of potential for confusion with numeric
-          security identifiers.
+          \code{TRUE} (there is potential for confusion with numeric
+          security identifiers, but this is likely to be a problem,
+	  supply ymd8 in the particular case).
+        }
+        \item{use.cache}{
+	  Try matching against cached values instead of using
+	  \code{strptime}?
+	  When this works, it is 10 to 15 times faster.
         }
 }
 \details{

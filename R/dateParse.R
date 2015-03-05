@@ -1,12 +1,18 @@
+.dateParseCache <- new.env()
+.dateParse.origin <- as.Date('1970-01-01')
+
 dateParse <- function(x, format=NULL, stop.on.error=TRUE, quick.try=TRUE,
                       dross.remove=FALSE, na.strings=c("NA", ""),
-                      ymd8=FALSE) {
+                      ymd8=TRUE, use.cache=TRUE) {
     if (missing(x) || length(x)==0)
         return(emptyDate())
 
     # Always return a Date object
-    if (inherits(x, "Date"))
+    if (inherits(x, "Date")) {
+        if (is.double(x))
+            storage.mode(x) <- 'integer'
         return(x)
+    }
     if (inherits(x, "POSIXt")) {
         # To get as.Date() to behave sensibly, need to explicitly
         # supply tz to as.Date().  Otherwise we get the behavior
@@ -15,8 +21,41 @@ dateParse <- function(x, format=NULL, stop.on.error=TRUE, quick.try=TRUE,
         tz <- attr(x, "tzone")
         if (is.null(tz))
             tz <- Sys.timezone()
-        return(as.Date(x, tz=tz))
+        return(as.Date(x, tz=tz, origin=.dateParse.origin))
     }
+    if (all(is.na(x))) {
+        y <- as.Date(as.integer(NA), origin=.dateParse.origin)
+        storage.mode(y) <- 'integer'
+        return(rep(y, length(x)))
+    }
+    if (!is.element('today.Date', names(.dateParseCache))) {
+        assign('today.Date', Sys.Date(), envir=.dateParseCache)
+    }
+
+    # set up a cache of dates
+    if (!exists('cache', envir=.dateParseCache, inherits=FALSE) && use.cache) {
+        dc <- seq(as.Date('1990-01-01', origin=.dateParse.origin), to=Sys.Date()+5*365, by='days')
+        storage.mode(dc) <- 'integer'
+        ival <- as.integer(dc)
+        dval <- as.integer(format(dc, '%Y%m%d'))
+        dminmax <- as.integer(format(range(dc), '%Y%m%d'))
+        sval <- format(dc)
+        sminmax <- format(range(dc))
+        # does this date format sort in original order?
+        if (sval[1] != sminmax[1] || sval[length(sval)] != sminmax[2])
+            sminmax <- NULL
+        cache <- list(ival=ival,
+                      iminmax=range(as.integer(dc)),
+                      sval=sval,
+                      sminmax=sminmax,
+                      dval=dval,
+                      dminmax=dminmax)
+        assign('cache', cache, envir=.dateParseCache)
+    } else {
+        if (use.cache)
+            cache <- get('cache', envir=.dateParseCache, inherits=FALSE)
+    }
+
     if (is.numeric(x) && ymd8) {
         # assume that the date is a whole number, maybe stored in a float
         if (!is.wholenumber(x)){
@@ -28,10 +67,19 @@ dateParse <- function(x, format=NULL, stop.on.error=TRUE, quick.try=TRUE,
             }
             else return(NULL)
         }
+        if (is.double(x))
+            storage.mode(x) <- 'integer'
 
         ## If we want 'zone' to make a difference, we
         ## have to use 'as.POSIXlt' instead of 'as.Date'.
-        d <- as.Date(strptime(x, "%Y%m%d"))
+        if (use.cache && min(x, na.rm=TRUE) >= cache$dminmax[1]
+            && max(x, na.rm=TRUE) <= cache$dminmax[2]) {
+            di <- match(x, cache$dval)
+            # only return this conversion if there were no problems
+            if (!any(is.na(di) & !is.na(x)))
+                return(as.Date(cache$ival[di], origin=.dateParse.origin))
+        }
+        d <- dateParse(strptime(as.character(x), "%Y%m%d"))
 
         # were there any elements of x that became NA because of parse?
         if (any(is.na(d) & !is.na(x))){
@@ -53,6 +101,16 @@ dateParse <- function(x, format=NULL, stop.on.error=TRUE, quick.try=TRUE,
         d <- levs[as.integer(x)]
         return(d)
     }
+    if (!is.character(x))
+        x <- as.character(x)
+    if (use.cache && length(x)>=1 && !is.na(match(x[1], cache$sval))
+        && (is.null(cache$sminmax)
+            || (min(x, na.rm=TRUE) >= cache$sminmax[1]
+                && max(x, na.rm=TRUE) <= cache$sminmax[2]))) {
+        di <- match(x, cache$sval)
+        if (!any(is.na(di) & !is.na(x)))
+            return(as.Date(cache$ival[di], origin=.dateParse.origin))
+    }
     if (quick.try && length(x)>20) {
         # quickly test just the first few elements of x so that we
         # can stop or return NULL quickly if we can't convert
@@ -63,8 +121,6 @@ dateParse <- function(x, format=NULL, stop.on.error=TRUE, quick.try=TRUE,
         # if quick.result is NULL, then stop.on.error must be false
         if (is.null(quick.result)) return(NULL)
     }
-    if (!is.character(x))
-        x <- as.character(x)
     if (length(na.strings)==0) {
         x.not.na.idx <- seq_along(x)
         have.nas <- FALSE
@@ -154,6 +210,8 @@ dateParse <- function(x, format=NULL, stop.on.error=TRUE, quick.try=TRUE,
     }
 
     d <- as.Date(x, format=format)
+    if (is.double(d))
+        storage.mode(d) <- 'integer'
 
     if (any(is.na(d[x.not.na.idx]))) {
         if (stop.on.error) {

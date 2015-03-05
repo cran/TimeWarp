@@ -7,7 +7,8 @@
   methods for \code{character}, \code{Date}, \code{POSIXct}, and \code{POSIXlt}.
 }
 \usage{
-dateAlign(x, by = "days", k.by = 1, direction = 1, week.align = NULL, holidays = NULL, silent = FALSE)
+dateAlign(x, by = "days", k.by = 1, direction = 1,
+          week.align = NULL, holidays = NULL, silent = FALSE)
 }
 \arguments{
   \item{x}{
@@ -57,14 +58,14 @@ dateAlign(x, by = "days", k.by = 1, direction = 1, week.align = NULL, holidays =
   returned value is \code{Date}, but this may change in the future.
 }
 \author{Lars Hansen, Tony Plate}
-\note{
-  Alignment of dates can be thought of as a partition on date sequences
-  where an input date is aligned to the first date in a partition, if it is not
-  already aligned. The direction of alignment determines which partition to use for
-  the alignment. If the direction is -1 then alignment happens in the partition which
-  the date falls in. If +1 then alignment happens in the partition just after the
-  partition in which the dates falls.
-}
+
+\note{ Alignment of dates can be thought of as a partition on date
+  sequences where an input date is aligned to the first date in a
+  partition, if it is not already aligned. The direction of alignment
+  determines which partition to use for the alignment. If the direction
+  is -1 then alignment happens in the partition which the date falls
+  in. If +1 then alignment happens in the partition just after the
+  partition in which the dates falls.  }
 
 \seealso{
   \code{\link{dateShift}},

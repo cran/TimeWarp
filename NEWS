@@ -1,3 +1,15 @@
+                CHANGES in TimeWarp version 1.0-9 (2014-03-27)
+CHANGES
+    o   change default for ymd8 arg on dateParse() to TRUE
+    o   make dateParse() use lookup tables for parsing
+    	standard format dates (10 to 15x speedup)
+    o   make underlying atomic type integer in dateParse()
+
+                CHANGES in TimeWarp version 1.0-8 (2014-03-27)
+CHANGES
+    o   allow more flexibility in specification arguments in dateWarp()
+    o   allow use of 'to' and 'len' args in dateSeq()
+
                 CHANGES in TimeWarp version 1.0-7 (2013-03-20)
 CHANGES
     o   fix partial matching in data frame in holidays()

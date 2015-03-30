@@ -20,6 +20,7 @@
 > intersect(c('NONE', 'NewYear'), allHolidays())
 [1] "NONE"    "NewYear"
 > holidays(1800, "NewYear")
+#@gsub("^Warning in .*", "Warning in ...", both)
 Warning in FUN("NewYear"[[1L]], ...) :
   Do not have any 'NewYear' holiday data for year(s) 1800.
 character(0)
@@ -30,4 +31,4 @@ character(0)
 [1] "NONE"
 > holidays(2000, "XXX")
 Error in holidays(2000, "XXX") : No 'XXX' holidays exist.
-> 
+>

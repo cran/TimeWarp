@@ -1,4 +1,4 @@
-00df25124bc76842cbbdfb359241260a *DESCRIPTION
+bc74b62a8327ae49b47cc894ecb1b89d *DESCRIPTION
 35106862a5c787dc3d8d856fa1eb462c *NAMESPACE
 4291d17475e1d34d446a3ec9feaa9032 *NEWS
 de35e421ece348ce2f4b7ba457b25bcd *R/POSIXt.R
@@ -32,6 +32,6 @@ e437ae61c8d4ada8c3f4ebbbef1bcee5 *tests/dateParse.Rt
 1eb3bf31594d8abe3a9220a8bc1dbc9d *tests/dateSeq.Rt
 ba42c561a79646a327707c286aef58c4 *tests/dateShift.Rt
 527a3dc59077586c9499cb314ce5bf89 *tests/dateWarp.Rt
-77f3b39fb626e5698e1deb092ba6814b *tests/holidays.Rt
+f2d71321f3464f01cb88d1eeec7bab79 *tests/holidays.Rt
 c7a2abcbfbcdad93d1d69000ecbac866 *tests/pitfalls.Rt
 48f296b4e8b3c9aaf7534823d5ede0cf *tests/runtests.R

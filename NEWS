@@ -1,3 +1,22 @@
+                CHANGES in TimeWarp version 1.0-15 (2016-07-20)
+CHANGES
+    o   change test output to be compatible with devel version of
+    	R which no longer prints 0-length dates as "character(0)"
+    o   fix other problems identified in R CMD check
+
+                CHANGES in TimeWarp version 1.0-14 (2015-04-21)
+CHANGES
+    o   add factor methods to dateWarp(), dateShift(), dateAlign(),
+        dateMatch() that return a factor instead of a Date object.
+
+                CHANGES in TimeWarp version 1.0-13 (2015-04-11)
+CHANGES
+    o   add optimization to dateWarp(), dateShift(), dateAlign(),
+        dateParse(), dateFormat(), dateMatch() so that when there
+	are many duplicates, we only do the slow date computation
+	once for each unique value.  This provides huge speed ups
+	for very long vectors with dates duplicated many times.
+
                 CHANGES in TimeWarp version 1.0-9 (2014-03-27)
 CHANGES
     o   change default for ymd8 arg on dateParse() to TRUE

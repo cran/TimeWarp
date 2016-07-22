@@ -163,14 +163,14 @@
 > dateSeq(to="2000-01-21", length.out=5, by="bizdays",holidays='NYSEC')
 [1] "2000-01-14" "2000-01-18" "2000-01-19" "2000-01-20" "2000-01-21"
 >
-> dateSeq("2008/1/2", "2008/1/1")
+> length(dateSeq("2008/1/2", "2008/1/1"))
 #@ ignore-linebreaks
 Warning in dateSeq.default("2008/1/2", "2008/1/1") :
   'from' date is later in time than the 'to' date.
-character(0)
+[1] 0
 > # Empty Date prints to look like empty character!
-> structure(numeric(0), class='Date')
-character(0)
+> length(structure(numeric(0), class='Date'))
+[1] 0
 > class(structure(numeric(0), class='Date'))
 [1] "Date"
 > str(structure(numeric(0), class='Date'))
@@ -187,9 +187,9 @@ Class 'Date'  num(0)
 [1] "2011-12-18"
 > dateSeq(as.Date('2011-12-18'),'2011-12-18', by='days')
 [1] "2011-12-18"
-> dateSeq('2011-12-18','2011-12-18', by='bizdays')
-character(0)
+> length(dateSeq('2011-12-18','2011-12-18', by='bizdays'))
+[1] 0
 > # regression test: used to incorrectly return '2013-01-21' as a member of this sequence (it's a holiday)
-> dateSeq('2013-01-19', '2013-01-21', by='bizdays@NYSEC')
-character(0)
+> length(dateSeq('2013-01-19', '2013-01-21', by='bizdays@NYSEC'))
+[1] 0
 >

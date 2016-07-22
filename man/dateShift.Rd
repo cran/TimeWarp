@@ -7,7 +7,8 @@
   methods for \code{character}, \code{Date}, \code{POSIXct}, and \code{POSIXlt}.
 }
 \usage{
-dateShift(x, by = "days", k.by = 1, direction = 1, holidays = NULL, silent = FALSE)
+dateShift(x, by = "days", k.by = 1, direction = 1, holidays = NULL,
+          silent = FALSE, optimize.dups=TRUE)
 }
 \arguments{
   \item{x}{
@@ -31,6 +32,11 @@ dateShift(x, by = "days", k.by = 1, direction = 1, holidays = NULL, silent = FAL
   }
   \item{silent}{
     logical indicating whether or not to suppress warnings about arguments.
+  }
+  \item{optimize.dups}{
+    If \code{TRUE}, internally optimize by not performing
+    the same computation multiple times for duplicates.  This does
+    not change the return value.
   }
 }
 \value{

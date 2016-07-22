@@ -1,32 +1,50 @@
 ## Align a dates on a day, bizday, month, week or year boundary.
 
-dateAlign <- function(x, by = 'days', k.by = 1, direction = 1, week.align = NULL, holidays = NULL, silent = FALSE)
+dateAlign <- function(x, by = 'days', k.by = 1, direction = 1, week.align = NULL, holidays = NULL, silent = FALSE, optimize.dups=TRUE)
     UseMethod("dateAlign")
 
-dateAlign.character <- function(x, by = 'days', k.by = 1, direction = 1, week.align = NULL, holidays = NULL, silent = FALSE)
+dateAlign.character <- function(x, by = 'days', k.by = 1, direction = 1, week.align = NULL, holidays = NULL, silent = FALSE, optimize.dups=TRUE)
 {
     x <- NextMethod('dateAlign')
     as.character(x)
 }
 
-dateAlign.POSIXct <- function(x, by = 'days', k.by = 1, direction = 1, week.align = NULL, holidays = NULL, silent = FALSE)
+dateAlign.factor <- function(x, by = 'days', k.by = 1, direction = 1, week.align = NULL, holidays = NULL, silent = FALSE, optimize.dups=TRUE)
+{
+    lev <- levels(x)
+    new.lev <- dateAlign.Date(dateParse(lev), by=by, k.by=k.by, direction=direction, week.align=week.align,
+                              holidays=holidays, silent=silent, optimize.dups=FALSE)
+    new.lev <- as.character(new.lev)
+    if (!any(duplicated(new.lev)) && length(new.lev)==length(lev) && !any(is.na(new.lev) & !is.na(lev))) {
+        levels(x) <- as.character(new.lev)
+    } else {
+        # Have duplicates new.lev; must recode factor to a smaller set of levels.
+        new.lev2 <- unique(new.lev)
+        new.lev2 <- sort(new.lev2[!is.na(new.lev2)])
+        recode <- match(new.lev, new.lev2)
+        x <- structure(recode[as.integer(x)], levels=new.lev2, class='factor')
+    }
+    x
+}
+
+dateAlign.POSIXct <- function(x, by = 'days', k.by = 1, direction = 1, week.align = NULL, holidays = NULL, silent = FALSE, optimize.dups=TRUE)
 {
     tz <- attr(date, 'tzone')
     x <- NextMethod('dateAlign')
     # need to convert Date to character before converting back to POSIXct
-    # see examples in tests/gotchas.Rt
+    # see examples in tests/pitfalls.Rt
     x <- as.POSIXct(as.character(x))
     if (!is.null(tz))
         attr(x, 'tzone') <- tz
     return(x)
 }
 
-dateAlign.POSIXlt <- function(x, by = 'days', k.by = 1, direction = 1, week.align = NULL, holidays = NULL, silent = FALSE)
+dateAlign.POSIXlt <- function(x, by = 'days', k.by = 1, direction = 1, week.align = NULL, holidays = NULL, silent = FALSE, optimize.dups=TRUE)
 {
     tz <- attr(date, 'tzone')
     x <- NextMethod('dateAlign')
     # need to convert Date to character before converting back to POSIXlt
-    # see examples in tests/gotchas.Rt
+    # see examples in tests/pitfalls.Rt
     x <- as.POSIXlt(as.character(x))
     if (!is.null(tz))
         attr(x, 'tzone') <- tz
@@ -34,7 +52,7 @@ dateAlign.POSIXlt <- function(x, by = 'days', k.by = 1, direction = 1, week.alig
 }
 
 
-dateAlign.Date <- function(x, by = 'days', k.by = 1, direction = 1, week.align = NULL, holidays = NULL, silent = FALSE)
+dateAlign.Date <- function(x, by = 'days', k.by = 1, direction = 1, week.align = NULL, holidays = NULL, silent = FALSE, optimize.dups=TRUE)
 {
     ### BEGIN ARGUMENT PROCESSING ###
     if (!inherits(x, "Date"))
@@ -102,6 +120,12 @@ dateAlign.Date <- function(x, by = 'days', k.by = 1, direction = 1, week.align =
 
     ### END ARGUMENT PROCESSING ###
 
+    if (optimize.dups && length(x) > 50 && length(xu <- unique(x)) < length(x)/2) {
+        # lots of duplicates -- do the slow date computations only for the unique values
+        yu <- dateAlign.Date(xu, by=by, k.by=k.by, direction=direction, week.align=week.align, holidays=holidays, silent=silent, optimize.dups=FALSE)
+        i <- match(x, xu)
+        return(yu[i])
+    }
     ## ALIGNMENT GUIDE
     ##
     ## Alignment of dates can be thought of as a partition on date sequences

@@ -21,7 +21,7 @@ dateSeq.POSIXct <- function(from = NULL, to = NULL, year = NULL, by = "days",
     tz <- attr(date, 'tzone')
     x <- NextMethod('dateSeq')
     # need to convert Date to character before converting back to POSIXct
-    # see examples in tests/gotchas.Rt
+    # see examples in tests/pitfalls.Rt
     x <- as.POSIXct(as.character(x))
     if (!is.null(tz))
         attr(x, 'tzone') <- tz
@@ -36,7 +36,7 @@ dateSeq.POSIXlt <- function(from = NULL, to = NULL, year = NULL, by = "days",
     tz <- attr(date, 'tzone')
     x <- NextMethod('dateSeq')
     # need to convert Date to character before converting back to POSIXlt
-    # see examples in tests/gotchas.Rt
+    # see examples in tests/pitfalls.Rt
     x <- as.POSIXlt(as.character(x))
     if (!is.null(tz))
         attr(x, 'tzone') <- tz

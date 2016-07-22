@@ -28,10 +28,10 @@ NULL
 [1] "2001-01-01"
 > dateParse(factor(c("2001/01/01","2001/01/03","2001/01/01","2001/01/03")))
 [1] "2001-01-01" "2001-01-03" "2001-01-01" "2001-01-03"
-> dateParse(character(0))
-character(0)
-> dateParse(factor(character(0)))
-character(0)
+> length(dateParse(character(0)))==0
+[1] TRUE
+> length(dateParse(factor(character(0))))==0
+[1] TRUE
 > #dateParse(c("06/20/1962","10/30/1962","NA"),zone="MDT",out.format=options("time.format.full24")[[1]])
 > #[1] 1962-06-20 00:00:00 MDT 1962-10-30 00:00:00 MDT NA                     
 > #> dateParse(c("06/20/1962","10/30/1962","NA"),out.format=options("time.format.full24")[[1]])
@@ -82,3 +82,13 @@ Error in dateParse("2001/22/2") :
 [1] "2001-02-14"
 > dateParse("2-14-2002")
 [1] "2002-02-14"
+> # Check that the duplicated-optimized computations for each class
+> set.seed(1)
+> xc <- sample(dateSeq("2010/01/01", "2010/04/01"), 1000, replace=TRUE)
+> xd <- as.Date(xc)
+> # get results different ways
+> xrc <- dateParse(xc, optimize.dups=FALSE)
+> xrco <- dateParse(xc)
+> identical(xrc, xrco)
+[1] TRUE
+> 

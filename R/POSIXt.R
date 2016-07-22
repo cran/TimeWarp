@@ -4,7 +4,7 @@
 ## versions assume that all the passed in POSIXt objects are in the
 ## same timezone.
 ##
-## They avoid the following R gotchas:
+## They avoid the following R pitfalls:
 ##
 ## ## Works fine in Date only
 ## > do.call("c", lapply(0:4, function(i) dateParse("2008/12/25") + i))

@@ -498,3 +498,28 @@ Warning in dateAlign.default("2007/12/06", by = "days", k.by = 4, direction = 1,
 > sum(dateAlign(allDates, by = "bizdays", holidays = "NYSEC") - allDates)
 Time difference of 5162 days
 > 
+> # Check that the duplicated-optimized computations for each class
+> set.seed(1)
+> xc <- sample(dateSeq("2010/01/01", "2010/04/01"), 1000, replace=TRUE)
+> xd <- as.Date(xc)
+> xf <- factor(xc)
+> xct <- as.POSIXct(xc)
+> xlt <- as.POSIXlt(xc)
+> # get results different ways & check they give the same result
+> xrc <- dateAlign(xc, by = "bizdays", holidays = "NYSEC", optimize.dups=FALSE)
+> xrco <- dateAlign(xc, by = "bizdays", holidays = "NYSEC")
+> xrfo <- dateAlign(xf, by = "bizdays", holidays = "NYSEC")
+> xrcto <- dateAlign(xct, by = "bizdays", holidays = "NYSEC")
+> xrlto <- dateAlign(xlt, by = "bizdays", holidays = "NYSEC")
+> xrdo <- dateAlign(xd, by = "bizdays", holidays = "NYSEC")
+> identical(xrc, xrco)
+[1] TRUE
+> identical(as.Date(xrc), xrdo)
+[1] TRUE
+> identical(factor(xrc), xrfo)
+[1] TRUE
+> identical(as.POSIXct(xrc), xrcto)
+[1] TRUE
+> identical(as.POSIXlt(xrc), xrlto)
+[1] TRUE
+>

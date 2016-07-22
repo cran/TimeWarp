@@ -5,12 +5,13 @@
 \description{
   Perform multiple shifts and alignments on \code{\link{Date}} vectors.
   \code{dateWarp()} is a generic, with
-  methods for \code{character}, \code{Date}, \code{POSIXct}, and \code{POSIXlt}.
+  methods for \code{character}, \code{factor}, \code{Date}, \code{POSIXct}, and \code{POSIXlt}.
 }
 \usage{
-dateWarp(date, spec, holidays = NULL, by = NULL, direction = 1, duplicates.keep = TRUE)
-dateWarpAppend(date, ..., where = c("sorted", "start", "end"), empty.ok
-= FALSE, duplicates.ok = FALSE)
+dateWarp(date, spec, holidays = NULL, by = NULL, direction = 1,
+         duplicates.keep = TRUE, optimize.dups=TRUE)
+dateWarpAppend(date, ..., where = c("sorted", "start", "end"), empty.ok = FALSE,
+               duplicates.ok = FALSE)
 }
 
 \arguments{
@@ -51,6 +52,11 @@ dateWarpAppend(date, ..., where = c("sorted", "start", "end"), empty.ok
         \item{duplicates.ok}{
           logical indicating whether or not to keep duplicate dates.
         }
+	\item{optimize.dups}{
+		If \code{TRUE}, internally optimize by not performing
+	the same computation multiple times for duplicates.  This does
+	not change the return value.
+	}
 }
 \details{
   \code{spec} specify tranformations in several ways:

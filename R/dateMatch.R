@@ -1,7 +1,7 @@
-dateMatch <- function(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.how=c("NA", "drop", "nearest", "stop"), nomatch=NA, offset=NULL,value=FALSE)
+dateMatch <- function(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.how=c("NA", "drop", "nearest", "stop"), nomatch=NA, offset=NULL,value=FALSE, optimize.dups=TRUE)
     UseMethod("dateMatch")
 
-dateMatch.character <- function(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.how=c("NA", "drop", "nearest", "stop"), nomatch=NA, offset=NULL,value=FALSE)
+dateMatch.character <- function(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.how=c("NA", "drop", "nearest", "stop"), nomatch=NA, offset=NULL,value=FALSE, optimize.dups=TRUE)
 {
     x <- NextMethod('dateMatch')
     if (value)
@@ -10,12 +10,36 @@ dateMatch.character <- function(x, table, how=c("NA", "before", "after", "neares
         x
 }
 
-dateMatch.POSIXct <- function(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.how=c("NA", "drop", "nearest", "stop"), nomatch=NA, offset=NULL,value=FALSE)
+dateMatch.factor <- function(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.how=c("NA", "drop", "nearest", "stop"), nomatch=NA, offset=NULL,value=FALSE, optimize.dups=TRUE)
+{
+    lev <- levels(x)
+    y <- dateMatch.Date(dateParse(lev), table=table, how=how, error.how=error.how,
+                        nomatch=nomatch, offset=offset, value=value, optimize.dups=FALSE)
+    if (value) {
+        new.lev <- as.character(y)
+        if (!any(duplicated(new.lev)) && length(new.lev)==length(lev) && !any(is.na(new.lev) & !is.na(lev))) {
+            levels(x) <- new.lev
+        } else {
+            # Have duplicates new.lev; must recode factor to a smaller set of levels.
+            new.lev2 <- unique(new.lev)
+            new.lev2 <- sort(new.lev2[!is.na(new.lev2)])
+            recode <- match(new.lev, new.lev2)
+            x <- structure(recode[as.integer(x)], levels=new.lev2, class='factor')
+        }
+        return(x)
+    } else {
+        return(y[as.integer(x)])
+    }
+}
+
+
+
+dateMatch.POSIXct <- function(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.how=c("NA", "drop", "nearest", "stop"), nomatch=NA, offset=NULL,value=FALSE, optimize.dups=TRUE)
 {
     tz <- attr(date, 'tzone')
     x <- NextMethod('dateMatch')
     # need to convert Date to character before converting back to POSIXct
-    # see examples in tests/gotchas.Rt
+    # see examples in tests/pitfalls.Rt
     if (value) {
         x <- as.POSIXct(as.character(x))
         if (!is.null(tz))
@@ -26,12 +50,12 @@ dateMatch.POSIXct <- function(x, table, how=c("NA", "before", "after", "nearest"
     }
 }
 
-dateMatch.POSIXlt <- function(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.how=c("NA", "drop", "nearest", "stop"), nomatch=NA, offset=NULL,value=FALSE)
+dateMatch.POSIXlt <- function(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.how=c("NA", "drop", "nearest", "stop"), nomatch=NA, offset=NULL,value=FALSE, optimize.dups=TRUE)
 {
     tz <- attr(date, 'tzone')
     x <- NextMethod('dateMatch')
     # need to convert Date to character before converting back to POSIXlt
-    # see examples in tests/gotchas.Rt
+    # see examples in tests/pitfalls.Rt
     if (value) {
         x <- as.POSIXlt(as.character(x))
         if (!is.null(tz))
@@ -42,7 +66,7 @@ dateMatch.POSIXlt <- function(x, table, how=c("NA", "before", "after", "nearest"
     }
 }
 
-dateMatch.Date <- function(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.how=c("NA", "drop", "nearest", "stop"), nomatch=NA, offset=NULL,value=FALSE)
+dateMatch.Date <- function(x, table, how=c("NA", "before", "after", "nearest", "interp"), error.how=c("NA", "drop", "nearest", "stop"), nomatch=NA, offset=NULL, value=FALSE, optimize.dups=TRUE)
 {
     have.error.how <- FALSE
     if (is.null(how)) {
@@ -59,6 +83,13 @@ dateMatch.Date <- function(x, table, how=c("NA", "before", "after", "nearest", "
             error.how <- "NA"
         else
             error.how <- match.arg(error.how)
+
+    if (optimize.dups && error.how!='drop' && length(x) > 50 && length(xu <- unique(x)) < length(x)/2) {
+        # lots of duplicates -- do the slow date computations only for the unique values
+        yu <- dateMatch.Date(xu, table=table, how=how, error.how=error.how, nomatch=nomatch, offset=NULL, value=value, optimize.dups=FALSE)
+        i <- match(x, xu)
+        return(yu[i])
+    }
 
     # return indices of x in table
     if (!inherits(x, 'Date'))

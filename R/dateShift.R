@@ -1,39 +1,58 @@
 ## Shift dates a number of days, bizdays, months, weeks or years.
 
-dateShift <- function(x, by = 'days', k.by = 1, direction = 1, holidays = NULL, silent = FALSE)
+dateShift <- function(x, by = 'days', k.by = 1, direction = 1, holidays = NULL, silent = FALSE, optimize.dups=TRUE) {
     UseMethod("dateShift")
+}
 
-dateShift.character <- function(x, by = 'days', k.by = 1, direction = 1, holidays = NULL, silent = FALSE)
+dateShift.character <- function(x, by = 'days', k.by = 1, direction = 1, holidays = NULL, silent = FALSE, optimize.dups=TRUE)
 {
     x <- NextMethod('dateShift')
     as.character(x)
 }
 
-dateShift.POSIXct <- function(x, by = 'days', k.by = 1, direction = 1, holidays = NULL, silent = FALSE)
+dateShift.factor <- function(x, by = 'days', k.by = 1, direction = 1, holidays = NULL, silent = FALSE, optimize.dups=TRUE)
+{
+    lev <- levels(x)
+    new.lev <- dateShift.Date(dateParse(lev), by=by, k.by=k.by, direction=direction,
+                              holidays=holidays, silent=silent, optimize.dups=FALSE)
+    new.lev <- as.character(new.lev)
+    if (!any(duplicated(new.lev)) && length(new.lev)==length(lev) && !any(is.na(new.lev) & !is.na(lev))) {
+        levels(x) <- new.lev
+    } else {
+        # Have duplicates new.lev; must recode factor to a smaller set of levels.
+        new.lev2 <- unique(new.lev)
+        new.lev2 <- sort(new.lev2[!is.na(new.lev2)])
+        recode <- match(new.lev, new.lev2)
+        x <- structure(recode[as.integer(x)], levels=new.lev2, class='factor')
+    }
+    x
+}
+
+dateShift.POSIXct <- function(x, by = 'days', k.by = 1, direction = 1, holidays = NULL, silent = FALSE, optimize.dups=TRUE)
 {
     tz <- attr(date, 'tzone')
     x <- NextMethod('dateShift')
     # need to convert Date to character before converting back to POSIXct
-    # see examples in tests/gotchas.Rt
+    # see examples in tests/pitfalls.Rt
     x <- as.POSIXct(as.character(x))
     if (!is.null(tz))
         attr(x, 'tzone') <- tz
     return(x)
 }
 
-dateShift.POSIXlt <- function(x, by = 'days', k.by = 1, direction = 1, holidays = NULL, silent = FALSE)
+dateShift.POSIXlt <- function(x, by = 'days', k.by = 1, direction = 1, holidays = NULL, silent = FALSE, optimize.dups=TRUE)
 {
     tz <- attr(date, 'tzone')
     x <- NextMethod('dateShift')
     # need to convert Date to character before converting back to POSIXlt
-    # see examples in tests/gotchas.Rt
+    # see examples in tests/pitfalls.Rt
     x <- as.POSIXlt(as.character(x))
     if (!is.null(tz))
         attr(x, 'tzone') <- tz
     return(x)
 }
 
-dateShift.Date <- function(x, by = 'days', k.by = 1, direction = 1, holidays = NULL, silent = FALSE)
+dateShift.Date <- function(x, by = 'days', k.by = 1, direction = 1, holidays = NULL, silent = FALSE, optimize.dups=TRUE)
 {
     ### BEGIN ARGUMENT PROCESSING ###
     if (!inherits(x, "Date"))
@@ -84,6 +103,12 @@ dateShift.Date <- function(x, by = 'days', k.by = 1, direction = 1, holidays = N
         }
     }
 
+    if (optimize.dups && length(x) > 50 && length(xu <- unique(x)) < length(x)/2) {
+        # lots of duplicates -- do the slow date computations only for the unique values
+        yu <- dateShift(xu, by=by, k.by=k.by, direction=direction, holidays=holidays, silent=silent, optimize.dups=FALSE)
+        i <- match(x, xu)
+        return(yu[i])
+    }
     ### END ARGUMENT PROCESSING ###
 
     len <- length(x)

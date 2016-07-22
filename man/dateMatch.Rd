@@ -9,7 +9,7 @@ methods for \code{character}, \code{Date}, \code{POSIXct}, and \code{POSIXlt}.
 \usage{
 dateMatch(x, table, how=c("NA", "before", "after", "nearest", "interp"),
           error.how=c("NA", "drop", "nearest", "stop"),
-          nomatch=NA, offset=NULL, value=FALSE)
+          nomatch=NA, offset=NULL, value=FALSE, optimize.dups=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -68,6 +68,11 @@ dateMatch(x, table, how=c("NA", "before", "after", "nearest", "interp"),
 	}
 	\item{value}{
 		If \code{TRUE}, the matching value in \code{table} is returned instead of the index.
+	}
+	\item{optimize.dups}{
+		If \code{TRUE}, internally optimize by not performing
+	the same computation multiple times for duplicates.  This does
+	not change the return value.
 	}
 }
 \details{

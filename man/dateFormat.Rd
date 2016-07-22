@@ -6,13 +6,18 @@
   Converts a Date object to character data
 }
 \usage{
-dateFormat(date, format = NULL)
+dateFormat(date, format = NULL, optimize.dups=TRUE)
 }
 \arguments{
   \item{date}{ A vector of dates.  Can be character data or some date
     object -- anything that can be handled by \code{dateParse()} }
   \item{format}{ A specification of the format.  The default will print
     as "YYYY-MM-DD" under both Windows and Linux. }
+  \item{optimize.dups}{
+    If \code{TRUE}, internally optimize by not performing
+    the same computation multiple times for duplicates.  This does
+    not change the return value.
+  }
 }
 \details{
 Unfortunately, 'format.POSIXct' does not have the same behavior on

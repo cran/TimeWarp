@@ -3,7 +3,7 @@
 
 dateParse <- function(x, format=NULL, stop.on.error=TRUE, quick.try=TRUE,
                       dross.remove=FALSE, na.strings=c("NA", ""),
-                      ymd8=TRUE, use.cache=TRUE) {
+                      ymd8=TRUE, use.cache=TRUE, optimize.dups=TRUE) {
     if (missing(x) || length(x)==0)
         return(emptyDate())
 
@@ -13,6 +13,17 @@ dateParse <- function(x, format=NULL, stop.on.error=TRUE, quick.try=TRUE,
             storage.mode(x) <- 'integer'
         return(x)
     }
+
+    if (optimize.dups && length(x) > 50 && length(xu <- unique(x)) < length(x)/2) {
+        # lots of duplicates -- do the slow date computations only for the unique values
+        yu <- dateParse(xu, format=format, stop.on.error=stop.on.error,
+                        quick.try=quick.try, dross.remove=dross.remove, na.strings=na.strings,
+                        ymd8=ymd8, use.cache=use.cache, optimize.dups=FALSE)
+        i <- match(x, xu)
+        return(yu[i])
+    }
+
+
     if (inherits(x, "POSIXt")) {
         # To get as.Date() to behave sensibly, need to explicitly
         # supply tz to as.Date().  Otherwise we get the behavior
@@ -28,35 +39,12 @@ dateParse <- function(x, format=NULL, stop.on.error=TRUE, quick.try=TRUE,
         storage.mode(y) <- 'integer'
         return(rep(y, length(x)))
     }
-    if (!is.element('today.Date', names(.dateParseCache))) {
-        assign('today.Date', Sys.Date(), envir=.dateParseCache)
-    }
-
-    # set up a cache of dates
-    if (!exists('cache', envir=.dateParseCache, inherits=FALSE) && use.cache) {
-        dc <- seq(as.Date('1990-01-01', origin=.dateParse.origin), to=Sys.Date()+5*365, by='days')
-        storage.mode(dc) <- 'integer'
-        ival <- as.integer(dc)
-        dval <- as.integer(format(dc, '%Y%m%d'))
-        dminmax <- as.integer(format(range(dc), '%Y%m%d'))
-        sval <- format(dc)
-        sminmax <- format(range(dc))
-        # does this date format sort in original order?
-        if (sval[1] != sminmax[1] || sval[length(sval)] != sminmax[2])
-            sminmax <- NULL
-        cache <- list(ival=ival,
-                      iminmax=range(as.integer(dc)),
-                      sval=sval,
-                      sminmax=sminmax,
-                      dval=dval,
-                      dminmax=dminmax)
-        assign('cache', cache, envir=.dateParseCache)
-    } else {
-        if (use.cache)
-            cache <- get('cache', envir=.dateParseCache, inherits=FALSE)
-    }
+    # if (!is.element('today.Date', names(.dateParseCache))) {
+    #     assign('today.Date', Sys.Date(), envir=.dateParseCache)
+    # }
 
     if (is.numeric(x) && ymd8) {
+        cache.fmt <- 'cache.ymd8'
         # assume that the date is a whole number, maybe stored in a float
         if (!is.wholenumber(x)){
             if (stop.on.error) {
@@ -69,6 +57,23 @@ dateParse <- function(x, format=NULL, stop.on.error=TRUE, quick.try=TRUE,
         }
         if (is.double(x))
             storage.mode(x) <- 'integer'
+
+        if (!exists(cache.fmt, envir=.dateParseCache, inherits=FALSE) && use.cache) {
+            dc <- seq(as.Date('1990-01-01', origin=.dateParse.origin), to=Sys.Date()+5*365, by='days')
+            storage.mode(dc) <- 'integer'
+            ival <- as.integer(dc)
+            dval <- as.integer(format(dc, '%Y%m%d'))
+            dminmax <- as.integer(format(range(dc), '%Y%m%d'))
+            # 'dval' is decimal integer value 20150101, ival is for integer-code Date (2015-01-01 == 16436)
+            cache <- list(ival=ival,
+                          iminmax=range(as.integer(dc)),
+                          dval=dval,
+                          dminmax=dminmax)
+            assign(cache.fmt, cache, envir=.dateParseCache)
+        } else {
+            if (use.cache)
+                cache <- get(cache.fmt, envir=.dateParseCache, inherits=FALSE)
+        }
 
         ## If we want 'zone' to make a difference, we
         ## have to use 'as.POSIXlt' instead of 'as.Date'.
@@ -93,6 +98,29 @@ dateParse <- function(x, format=NULL, stop.on.error=TRUE, quick.try=TRUE,
         }
         return(d)
     }
+
+    # set up a cache of dates, one for each format
+    cache.fmt <- paste0('cache.', format)
+    if (!exists(cache.fmt, envir=.dateParseCache, inherits=FALSE) && use.cache) {
+        dc <- seq(as.Date('1990-01-01', origin=.dateParse.origin), to=Sys.Date()+5*365, by='days')
+        storage.mode(dc) <- 'integer'
+        ival <- as.integer(dc)
+        sval <- format(dc)
+        sminmax <- format(range(dc))
+        # does this date format sort in original order?
+        if (sval[1] != sminmax[1] || sval[length(sval)] != sminmax[2])
+            sminmax <- NULL
+        # 'sval' is for string value, ival is for integer-code Date (2015-01-01 == 16436)
+        cache <- list(ival=ival,
+                      iminmax=range(as.integer(dc)),
+                      sval=sval,
+                      sminmax=sminmax)
+        assign(cache.fmt, cache, envir=.dateParseCache)
+    } else {
+        if (use.cache)
+            cache <- get(cache.fmt, envir=.dateParseCache, inherits=FALSE)
+    }
+
     if (is.factor(x)) {
         levs <- dateParse(levels(x), format=format,
                           stop.on.error=stop.on.error, quick.try=quick.try,

@@ -16,3 +16,13 @@
  [1] "2001Q1" "2001Q1" "2001Q1" "2001Q2" "2001Q2" "2001Q2" "2001Q3" "2001Q3"
  [9] "2001Q3" "2001Q4" "2001Q4" "2001Q4"
 >
+> # Check that the duplicated-optimized computations for each class
+> set.seed(1)
+> xc <- sample(dateSeq("2010/01/01", "2010/04/01"), 1000, replace=TRUE)
+> xd <- as.Date(xc)
+> # get results different ways
+> xrc <- dateFormat(xc, optimize.dups=FALSE)
+> xrco <- dateFormat(xc)
+> identical(xrc, xrco)
+[1] TRUE
+> 

@@ -479,3 +479,28 @@ Error in dateShift.default("2007/12/06", by = "days", k.by = 0, direction = -1) 
 [1] 10615
 > sum(dateShift(allDates, by = "bizdays", holidays = "NYSEC") - allDates)
 Time difference of 15776 days
+> # Check that the duplicated-optimized computations for each class
+> set.seed(1)
+> xc <- sample(dateSeq("2010/01/01", "2010/04/01"), 1000, replace=TRUE)
+> xd <- as.Date(xc)
+> xf <- factor(xc)
+> xct <- as.POSIXct(xc)
+> xlt <- as.POSIXlt(xc)
+> # get results different ways
+> xrc <- dateShift(xc, k.by=1, by='bizdays@NYSEC', optimize.dups=FALSE)
+> xrco <- dateShift(xc, k.by=1, by='bizdays@NYSEC')
+> xrfo <- dateShift(xf, k.by=1, by='bizdays@NYSEC')
+> xrcto <- dateShift(xct, k.by=1, by='bizdays@NYSEC')
+> xrlto <- dateShift(xlt, k.by=1, by='bizdays@NYSEC')
+> xrdo <- dateShift(xd, k.by=1, by='bizdays@NYSEC')
+> identical(xrc, xrco)
+[1] TRUE
+> identical(factor(xrc), xrfo)
+[1] TRUE
+> identical(as.Date(xrc), xrdo)
+[1] TRUE
+> identical(as.POSIXct(xrc), xrcto)
+[1] TRUE
+> identical(as.POSIXlt(xrc), xrlto)
+[1] TRUE
+>

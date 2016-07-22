@@ -148,3 +148,31 @@ Error in dateMatch.default(c("2000/01/01", "2001/01/10", "2001/03/12"),  :
 > dateMatch(structure(c(13283, 13466, 13559, 13654, 13787), class = "Date"), as.Date('2007-05-21'), how = "nearest", value = T)
 [1] "2007-05-21" "2007-05-21" "2007-05-21" "2007-05-21" "2007-05-21"
 > 
+> # Check that the duplicated-optimized computations for each class
+> library(Holidays)
+#@ ignore-output
+> set.seed(1)
+> xc <- sample(dateSeq("2010/01/01", "2010/04/01"), 1000, replace=TRUE)
+> xt <- dateSeq("2010/01/01", "2010/04/01", by='bizdays@NYSEC')
+> xd <- as.Date(xc)
+> xf <- factor(xc)
+> xct <- as.POSIXct(xc)
+> xlt <- as.POSIXlt(xc)
+> # get results different ways & check they give the same result
+> xrc <- dateMatch(xc, xt, how='before.NA', optimize.dups=FALSE, value=TRUE)
+> xrco <- dateMatch(xc, xt, how='before.NA', value=TRUE)
+> xrfo <- dateMatch(xf, xt, how='before.NA', value=TRUE)
+> xrcto <- dateMatch(xct, xt, how='before.NA', value=TRUE)
+> xrlto <- dateMatch(xlt, xt, how='before.NA', value=TRUE)
+> xrdo <- dateMatch(xd, xt, how='before.NA', value=TRUE)
+> identical(xrc, xrco)
+[1] TRUE
+> identical(as.Date(xrc), xrdo)
+[1] TRUE
+> identical(factor(xrc), xrfo)
+[1] TRUE
+> identical(as.POSIXct(xrc), xrcto)
+[1] TRUE
+> identical(as.POSIXlt(xrc), xrlto)
+[1] TRUE
+>

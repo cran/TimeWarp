@@ -23,7 +23,8 @@ returns \code{NA} for elements that cannot be parsed.)
 }
 \usage{
 dateParse(x, format = NULL, stop.on.error = TRUE, quick.try = TRUE,
-dross.remove = FALSE, na.strings = c("NA", ""), ymd8 = TRUE, use.cache = TRUE)
+          dross.remove = FALSE, na.strings = c("NA", ""), ymd8 = TRUE,
+          use.cache = TRUE, optimize.dups=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -61,6 +62,12 @@ return \code{NULL}?
 	  \code{strptime}?
 	  When this works, it is 10 to 15 times faster.
         }
+	      
+	\item{optimize.dups}{
+		If \code{TRUE}, internally optimize by not performing
+	the same computation multiple times for duplicates.  This does
+	not change the return value.
+	}
 }
 \details{
         If any elements of \code{x} cannot be interpreted as a

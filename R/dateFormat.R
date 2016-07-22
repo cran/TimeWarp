@@ -42,7 +42,7 @@ dateFormat.config <- function() {
         dateFormat.env$f02md.ok <- FALSE
 }
 
-dateFormat <- function(date, format = NULL)
+dateFormat <- function(date, format = NULL, optimize.dups = TRUE)
 {
     if (!dateFormat.env$initialized)
         dateFormat.config()
@@ -52,6 +52,16 @@ dateFormat <- function(date, format = NULL)
         format <- gsub('%04Y', '%Y', format, fixed=TRUE)
     if (!dateFormat.env$f02md.ok && regexpr('%02', format, fixed=TRUE)>0)
         format <- gsub('%02', '%', format, fixed=TRUE)
+    if (is.factor(date)) {
+        yu <- dateFormat(levels(date), format=format, optimize.dups=FALSE)
+        return(yu[as.integer(date)])
+    }
+    if (optimize.dups && length(date) > 50 && length(xu <- unique(date)) < length(date)/2) {
+        # lots of duplicates -- do the slow date computations only for the unique values
+        yu <- dateFormat(xu, format=format, optimize.dups=FALSE)
+        i <- match(date, xu)
+        return(yu[i])
+    }
 
     if (is.character(date))
         date <- dateParse(date)

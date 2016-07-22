@@ -8,7 +8,8 @@
 }
 \usage{
 dateAlign(x, by = "days", k.by = 1, direction = 1,
-          week.align = NULL, holidays = NULL, silent = FALSE)
+          week.align = NULL, holidays = NULL, silent = FALSE,
+          optimize.dups=TRUE)
 }
 \arguments{
   \item{x}{
@@ -38,6 +39,11 @@ dateAlign(x, by = "days", k.by = 1, direction = 1,
   }
   \item{silent}{
     logical indicating whether or not to suppress warnings about arguments.
+  }
+  \item{optimize.dups}{
+    If \code{TRUE}, internally optimize by not performing
+    the same computation multiple times for duplicates.  This does
+    not change the return value.
   }
 }
 \value{
